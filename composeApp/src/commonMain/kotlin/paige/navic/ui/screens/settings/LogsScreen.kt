@@ -53,8 +53,8 @@ fun SettingsLogsScreen() {
 		}
 	}
 
-	LaunchedEffect(logs.size) {
-		if (logs.lastIndex > 0) {
+	LaunchedEffect(logs.lastOrNull()) {
+		if (logs.isNotEmpty()) {
 			listState.requestScrollToItem(logs.lastIndex)
 		}
 	}
