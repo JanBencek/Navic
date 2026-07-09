@@ -54,7 +54,7 @@ import paige.navic.data.database.dao.AlbumDao
 import paige.navic.data.database.mappers.toDomainModel
 import paige.navic.domain.manager.AndroidScrobbleManager
 import paige.navic.domain.manager.ConnectivityManager
-import paige.navic.domain.manager.DownloadManager
+import paige.navic.domain.manager.downloads.DownloadManager
 import paige.navic.domain.manager.PreferenceManager
 import paige.navic.domain.manager.SessionManager
 import paige.navic.domain.manager.SnackBarManager

@@ -20,7 +20,7 @@ import org.jetbrains.compose.resources.pluralStringResource
 import org.koin.compose.koinInject
 import paige.navic.LocalNavStack
 import paige.navic.data.database.entities.DownloadStatus
-import paige.navic.domain.manager.DownloadManager
+import paige.navic.domain.manager.downloads.DownloadManager
 import paige.navic.domain.manager.SnackBarManager
 import paige.navic.domain.models.DomainPlaylist
 import paige.navic.ui.components.layouts.ArtGridItem

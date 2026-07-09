@@ -22,7 +22,7 @@ import paige.navic.data.database.dao.ArtistDao
 import paige.navic.data.database.entities.DownloadStatus
 import paige.navic.data.database.mappers.toDomainModel
 import paige.navic.domain.manager.ConnectivityManager
-import paige.navic.domain.manager.DownloadManager
+import paige.navic.domain.manager.downloads.DownloadManager
 import paige.navic.domain.manager.SnackBarManager
 import paige.navic.domain.models.DomainAlbum
 import paige.navic.domain.models.DomainArtist

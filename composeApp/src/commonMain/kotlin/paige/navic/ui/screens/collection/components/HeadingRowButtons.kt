@@ -35,7 +35,7 @@ import navic.composeapp.generated.resources.notice_download_started
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import paige.navic.data.database.entities.DownloadStatus
-import paige.navic.domain.manager.DownloadManager
+import paige.navic.domain.manager.downloads.DownloadManager
 import paige.navic.domain.manager.SnackBarManager
 import paige.navic.domain.models.DomainSongCollection
 import paige.navic.icons.Icons
