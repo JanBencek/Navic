@@ -17,7 +17,7 @@ import navic.composeapp.generated.resources.notice_removed_from_playlist
 import paige.navic.data.database.entities.DownloadStatus
 import paige.navic.data.database.mappers.toDomainModel
 import paige.navic.domain.manager.ConnectivityManager
-import paige.navic.domain.manager.downloads.DownloadManager
+import paige.navic.domain.manager.DownloadManager
 import paige.navic.domain.manager.SessionManager
 import paige.navic.domain.manager.SnackBarManager
 import paige.navic.domain.models.DomainAlbum

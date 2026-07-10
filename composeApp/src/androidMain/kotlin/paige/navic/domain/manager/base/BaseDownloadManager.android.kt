@@ -1,26 +1,26 @@
-package paige.navic.domain.manager
+package paige.navic.domain.manager.base
 
 import android.app.DownloadManager
 import android.content.Context
 import android.database.Cursor
 import android.net.Uri
 import android.os.Environment
+import androidx.core.net.toUri
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.Dispatchers
+import paige.navic.domain.manager.StorageManager
 import paige.navic.domain.models.DomainSong
 import java.io.File
-import androidx.core.net.toUri
-import paige.navic.domain.manager.downloads.BaseDownloadManager
 import kotlin.time.Duration.Companion.milliseconds
 
-class AndroidBaseDownloadManager(
+actual class BaseDownloadManager(
 	private val context: Context,
 	private val storageManager: StorageManager
-) : BaseDownloadManager {
+) {
 	private val downloadManager = context.getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
 
-	override suspend fun downloadAudio(
+	actual suspend fun downloadAudio(
 		song: DomainSong,
 		url: String,
 		extension: String,

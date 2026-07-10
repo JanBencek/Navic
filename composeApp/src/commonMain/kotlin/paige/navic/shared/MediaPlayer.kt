@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromJsonElement
 import paige.navic.domain.manager.ConnectivityManager
-import paige.navic.domain.manager.downloads.DownloadManager
+import paige.navic.domain.manager.DownloadManager
 import paige.navic.domain.manager.PreferenceManager
 import paige.navic.domain.models.DomainExplicitStatus
 import paige.navic.domain.models.DomainRadio

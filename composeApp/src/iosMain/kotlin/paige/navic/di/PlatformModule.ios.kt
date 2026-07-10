@@ -9,13 +9,12 @@ import org.koin.dsl.module
 import paige.navic.data.database.CacheDatabase
 import paige.navic.data.database.DownloadDatabase
 import paige.navic.domain.manager.AppIconManager
-import paige.navic.domain.manager.downloads.BaseDownloadManager
 import paige.navic.domain.manager.ConnectivityManager
-import paige.navic.domain.manager.IosBaseDownloadManager
 import paige.navic.domain.manager.LogManager
 import paige.navic.domain.manager.PermissionManager
 import paige.navic.domain.manager.ShareManager
 import paige.navic.domain.manager.StorageManager
+import paige.navic.domain.manager.base.BaseDownloadManager
 import paige.navic.domain.repositories.PlayerStateRepository
 import paige.navic.shared.IOSMediaPlayerViewModel
 import paige.navic.shared.MediaPlayerViewModel
@@ -73,7 +72,7 @@ actual val platformModule = module {
 	}
 
 	singleOf(::ShareManager)
-	single<BaseDownloadManager> { IosBaseDownloadManager(get()) }
+	singleOf(::BaseDownloadManager)
 	single<CoilPlatformContext> { CoilPlatformContext.INSTANCE }
 	singleOf(::StorageManager)
 	singleOf(::ConnectivityManager)

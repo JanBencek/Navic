@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import paige.navic.domain.manager.ConnectivityManager
-import paige.navic.domain.manager.downloads.DownloadManager
+import paige.navic.domain.manager.DownloadManager
 import paige.navic.domain.manager.IOSScrobbleManager
 import paige.navic.domain.manager.PreferenceManager
 import paige.navic.domain.manager.SessionManager

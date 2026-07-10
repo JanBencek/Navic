@@ -3,19 +3,17 @@ package paige.navic.di
 import androidx.room3.Room
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import org.koin.android.ext.koin.androidApplication
-import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.singleOf
 import org.koin.dsl.module
 import paige.navic.data.database.CacheDatabase
 import paige.navic.data.database.DownloadDatabase
-import paige.navic.domain.manager.AndroidBaseDownloadManager
 import paige.navic.domain.manager.AppIconManager
-import paige.navic.domain.manager.downloads.BaseDownloadManager
 import paige.navic.domain.manager.ConnectivityManager
 import paige.navic.domain.manager.LogManager
 import paige.navic.domain.manager.PermissionManager
 import paige.navic.domain.manager.ShareManager
 import paige.navic.domain.manager.StorageManager
+import paige.navic.domain.manager.base.BaseDownloadManager
 import paige.navic.domain.repositories.PlayerStateRepository
 import paige.navic.shared.AndroidMediaPlayerViewModel
 import paige.navic.shared.MediaPlayerViewModel
@@ -69,7 +67,7 @@ actual val platformModule = module {
 
 	singleOf(::ShareManager)
 	singleOf(::StorageManager)
-	single<BaseDownloadManager> { AndroidBaseDownloadManager(androidContext(), get()) }
+	singleOf(::BaseDownloadManager)
 	singleOf(::ConnectivityManager)
 	singleOf(::LogManager)
 	singleOf(::AppIconManager)

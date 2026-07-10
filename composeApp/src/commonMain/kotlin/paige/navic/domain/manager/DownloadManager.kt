@@ -1,5 +1,6 @@
-package paige.navic.domain.manager.downloads
+package paige.navic.domain.manager
 
+import coil3.PlatformContext
 import coil3.SingletonImageLoader
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
@@ -29,19 +30,15 @@ import paige.navic.data.database.dao.LyricDao
 import paige.navic.data.database.entities.DownloadEntity
 import paige.navic.data.database.entities.DownloadStatus
 import paige.navic.data.database.entities.LyricEntity
-import paige.navic.domain.manager.ConnectivityManager
-import paige.navic.domain.manager.PreferenceManager
-import paige.navic.domain.manager.SessionManager
-import paige.navic.domain.manager.StorageManager
+import paige.navic.domain.manager.base.BaseDownloadManager
 import paige.navic.domain.models.DomainSong
 import paige.navic.domain.models.DomainSongCollection
 import paige.navic.domain.repositories.LyricsRepository
 import paige.navic.util.core.Logger
 import paige.navic.util.core.PlatformType
-import coil3.PlatformContext as CoilPlatformContext
 
 class DownloadManager(
-    private val coilPlatformContext: CoilPlatformContext,
+    private val coilPlatformContext: PlatformContext,
     private val downloadDao: DownloadDao,
     private val albumDao: AlbumDao,
     private val storageManager: StorageManager,
@@ -58,7 +55,7 @@ class DownloadManager(
 	private val activeDownloadsMutex = Mutex()
 	private val activeDownloads = mutableMapOf<String, Job>()
 	private val downloadSemaphore =
-		Semaphore(10)// idk a good number, maybe u should be able to choose
+        Semaphore(10)// idk a good number, maybe u should be able to choose
 
 	private var libraryDownloadJob: Job? = null
 
@@ -100,7 +97,7 @@ class DownloadManager(
 			if (alreadyActive) return@launch
 
 			try {
-				activeDownloadsMutex.withLock { activeDownloads[song.id] = coroutineContext[Job]!! }
+				activeDownloadsMutex.withLock { activeDownloads[song.id] = coroutineContext[Job.Key]!! }
 
 				downloadSemaphore.withPermit {
 					executeDownloadProcess(song)
@@ -318,11 +315,11 @@ class DownloadManager(
 			val lyricsResult = lyricsRepository.fetchLyrics(song)
 			if (lyricsResult != null && lyricsResult.rawContent != null) {
 				lyricDao.insertLyrics(
-					LyricEntity(
-						song.id,
-						lyricsResult.rawContent,
-						lyricsResult.provider
-					)
+                    LyricEntity(
+                        song.id,
+                        lyricsResult.rawContent,
+                        lyricsResult.provider
+                    )
 				)
 				Logger.i("DownloadManager", "cached lyrics for ${song.id}")
 			}
@@ -386,12 +383,12 @@ class DownloadManager(
 		progressJob?.cancel()
 
 		downloadDao.insertDownload(
-			DownloadEntity(
-				song.id,
-				DownloadStatus.DOWNLOADED,
-				1f,
-				path
-			)
+            DownloadEntity(
+                song.id,
+                DownloadStatus.DOWNLOADED,
+                1f,
+                path
+            )
 		)
 	}
 }

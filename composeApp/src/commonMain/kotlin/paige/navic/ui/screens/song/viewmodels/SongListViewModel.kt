@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import paige.navic.domain.manager.ConnectivityManager
-import paige.navic.domain.manager.downloads.DownloadManager
+import paige.navic.domain.manager.DownloadManager
 import paige.navic.domain.manager.SessionManager
 import paige.navic.domain.models.DomainSong
 import paige.navic.domain.models.DomainSongListType
