@@ -11,6 +11,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import paige.navic.domain.manager.StorageManager
 import paige.navic.domain.models.DomainSong
+import paige.navic.util.core.Logger
 import java.io.File
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -42,44 +43,50 @@ actual class BaseDownloadManager(
 		var downloading = true
 		var finalPath = ""
 
-		while (downloading) {
-			val query = DownloadManager.Query().setFilterById(downloadId)
-			val cursor: Cursor = downloadManager.query(query)
+		try {
+			while (downloading) {
+				val query = DownloadManager.Query().setFilterById(downloadId)
+				val cursor: Cursor = downloadManager.query(query)
 
-			if (cursor.moveToFirst()) {
-				val status = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))
-				val bytesDownloaded = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
-				val bytesTotal = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
+				if (cursor.moveToFirst()) {
+					val status = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_STATUS))
+					val bytesDownloaded = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR))
+					val bytesTotal = cursor.getLong(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES))
 
-				if (bytesTotal > 0) {
-					onProgress(bytesDownloaded.toFloat() / bytesTotal.toFloat())
-				}
+					if (bytesTotal > 0) {
+						onProgress(bytesDownloaded.toFloat() / bytesTotal.toFloat())
+					}
 
-				when (status) {
-					DownloadManager.STATUS_SUCCESSFUL -> {
-						val localUri = cursor.getString(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_LOCAL_URI))
-						val sourceFile = File(Uri.parse(localUri).path!!)
-						
-						finalPath = storageManager.getDownloadPath(song.id, extension)
-						val destinationFile = File(finalPath)
-						
-						withContext(Dispatchers.IO) {
-							sourceFile.copyTo(destinationFile, overwrite = true)
-							sourceFile.delete()
+					when (status) {
+						DownloadManager.STATUS_SUCCESSFUL -> {
+							val localUri = cursor.getString(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_LOCAL_URI))
+							val sourceFile = File(Uri.parse(localUri).path!!)
+							
+							finalPath = storageManager.getDownloadPath(song.id, extension)
+							val destinationFile = File(finalPath)
+							
+							withContext(Dispatchers.IO) {
+								sourceFile.copyTo(destinationFile, overwrite = true)
+								sourceFile.delete()
+							}
+							
+							downloading = false
 						}
-						
-						downloading = false
-					}
-					DownloadManager.STATUS_FAILED -> {
-						downloading = false
-						throw Exception("Download failed with status: $status")
+						DownloadManager.STATUS_FAILED -> {
+							val reason = cursor.getInt(cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_REASON))
+							downloading = false
+							Logger.e("BaseDownloadManager", "Download failed for ${song.id} with reason: $reason")
+							throw Exception("Download failed with reason: $reason")
+						}
 					}
 				}
+				cursor.close()
+				if (downloading) {
+					delay(500.milliseconds)
+				}
 			}
-			cursor.close()
-			if (downloading) {
-				delay(500.milliseconds)
-			}
+		} finally {
+			downloadManager.remove(downloadId)
 		}
 
 		return finalPath
