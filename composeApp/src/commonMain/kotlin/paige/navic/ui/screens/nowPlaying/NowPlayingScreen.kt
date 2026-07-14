@@ -65,6 +65,7 @@ fun NowPlayingScreen() {
 	val isPlayerCurrent = currentScreen is Screen.NowPlaying
 		|| currentScreen is Screen.Queue
 		|| currentScreen is Screen.PlaybackSpeed
+		|| currentScreen is Screen.SongDetailSheet
 
 	val playerState by player.uiState.collectAsStateWithLifecycle()
 	val song = playerState.currentSong

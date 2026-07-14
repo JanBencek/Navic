@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 @Immutable
-sealed class DomainSongListType() {
+sealed class DomainSongListType {
 	@Serializable
 	@Immutable
 	data object FrequentlyPlayed : DomainSongListType()

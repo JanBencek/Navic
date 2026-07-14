@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import navic.composeapp.generated.resources.Res
 import navic.composeapp.generated.resources.title_create_playlist
 import navic.composeapp.generated.resources.title_radios
@@ -39,7 +40,6 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import paige.navic.LocalBottomBarScrollManager
-import paige.navic.LocalPlatformContext
 import paige.navic.domain.manager.PreferenceManager
 import paige.navic.domain.models.settings.BottomBarCollapseMode
 import paige.navic.icons.Icons
@@ -50,8 +50,9 @@ import paige.navic.ui.components.layouts.NestedTopBar
 import paige.navic.ui.components.layouts.PullToRefreshBox
 import paige.navic.ui.components.layouts.RootBottomBar
 import paige.navic.ui.components.layouts.RootTopBar
-import paige.navic.ui.components.snackbars.ErrorSnackbar
+import paige.navic.ui.components.snackbars.ErrorSnackBar
 import paige.navic.ui.core.UiState
+import paige.navic.ui.navigation.PersistentViewModelStoreOwner
 import paige.navic.ui.screens.radio.components.radioListScreenContent
 import paige.navic.ui.screens.radio.dialogs.RadioCreateDialog
 import paige.navic.ui.screens.radio.viewmodels.RadioListViewModel
@@ -62,9 +63,14 @@ import paige.navic.util.ui.withoutTop
 fun RadioListScreen(
 	nested: Boolean
 ) {
-	val platformContext = LocalPlatformContext.current
 	val scrollManager = LocalBottomBarScrollManager.current
-	val viewModel = koinViewModel<RadioListViewModel>()
+	val viewModel = koinViewModel<RadioListViewModel>(
+		viewModelStoreOwner = if (nested) {
+			LocalViewModelStoreOwner.current!!
+		} else {
+			koinInject<PersistentViewModelStoreOwner>()
+		}
+	)
 	val player = koinInject<MediaPlayerViewModel>()
 	val radiosState by viewModel.radiosState.collectAsState()
 	val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
@@ -104,7 +110,6 @@ fun RadioListScreen(
 						shape = MaterialTheme.shapes.large,
 						containerColor = MaterialTheme.colorScheme.primary,
 						onClick = {
-							platformContext.clickSound()
 							createDialogShown = true
 						}
 					) {
@@ -151,7 +156,7 @@ fun RadioListScreen(
 		}
 	}
 
-	ErrorSnackbar(
+	ErrorSnackBar(
 		error = (radiosState as? UiState.Error)?.error,
 		onClearError = { viewModel.clearError() }
 	)

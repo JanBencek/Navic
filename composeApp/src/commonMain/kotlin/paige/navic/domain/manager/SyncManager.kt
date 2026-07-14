@@ -61,7 +61,7 @@ class SyncManager(
 	}
 
 	fun startPeriodicSync() {
-		Logger.i("SyncManager", "Starting periodic sync cicle.")
+		Logger.i("SyncManager", "Starting periodic sync cycle.")
 		if (syncJob?.isActive == true) return
 
 		scope.launch {

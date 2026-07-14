@@ -15,31 +15,31 @@ import navic.composeapp.generated.resources.info_error
 import navic.composeapp.generated.resources.info_error_show
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
-import paige.navic.LocalSnackbarState
+import paige.navic.LocalSnackBarState
 import paige.navic.ui.components.common.ErrorCodeBlock
 import paige.navic.ui.components.common.FormButton
 import paige.navic.ui.components.dialogs.FormDialog
 import paige.navic.util.core.Logger
 
 @Composable
-fun ErrorSnackbar(
+fun ErrorSnackBar(
 	error: Throwable?,
 	onClearError: () -> Unit
 ) {
 	if (error == null) return
 
-	val snackbarState = LocalSnackbarState.current
+	val snackBarState = LocalSnackBarState.current
 	var visible by rememberSaveable { mutableStateOf(false) }
 
 	LaunchedEffect(error) {
-		val result = snackbarState.showSnackbar(
+		val result = snackBarState.showSnackbar(
 			message = getString(Res.string.info_error),
 			actionLabel = getString(Res.string.info_error_show),
 			duration = SnackbarDuration.Long
 		)
 		if (result == SnackbarResult.ActionPerformed) {
 			visible = true
-			Logger.e("ErrorSnackbar", "Printing stack trace for error", error)
+			Logger.e("ErrorSnackBar", "Printing stack trace for error", error)
 		} else {
 			onClearError()
 		}

@@ -28,7 +28,7 @@ import paige.navic.ui.components.dialogs.QueueDuplicateDialog
 import paige.navic.ui.components.layouts.NestedTopBar
 import paige.navic.ui.components.layouts.PullToRefreshBox
 import paige.navic.ui.components.layouts.RootBottomBar
-import paige.navic.ui.components.snackbars.ErrorSnackbar
+import paige.navic.ui.components.snackbars.ErrorSnackBar
 import paige.navic.ui.core.UiState
 import paige.navic.ui.screens.album.viewmodels.AlbumListViewModel
 import paige.navic.ui.screens.genre.components.GenreDetailScreenContent
@@ -149,7 +149,7 @@ fun GenreDetailScreen(
 		(songsState as? UiState.Error)?.error
 	).mapNotNull { it?.stackTraceToString() }.takeIf { it.isNotEmpty() }?.joinToString("\n\n")
 
-	ErrorSnackbar(
+	ErrorSnackBar(
 		error = flattenedErrors?.let { Error(it) },
 		onClearError = {
 			albumsViewModel.clearError()

@@ -36,6 +36,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import navic.composeapp.generated.resources.Res
 import navic.composeapp.generated.resources.title_create_playlist
 import navic.composeapp.generated.resources.title_playlists
@@ -43,7 +44,6 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import paige.navic.LocalBottomBarScrollManager
-import paige.navic.LocalPlatformContext
 import paige.navic.domain.manager.PreferenceManager
 import paige.navic.domain.models.DomainSongCollection
 import paige.navic.domain.models.settings.BottomBarCollapseMode
@@ -58,8 +58,9 @@ import paige.navic.ui.components.layouts.NestedTopBar
 import paige.navic.ui.components.layouts.PullToRefreshBox
 import paige.navic.ui.components.layouts.RootBottomBar
 import paige.navic.ui.components.layouts.RootTopBar
-import paige.navic.ui.components.snackbars.ErrorSnackbar
+import paige.navic.ui.components.snackbars.ErrorSnackBar
 import paige.navic.ui.core.UiState
+import paige.navic.ui.navigation.PersistentViewModelStoreOwner
 import paige.navic.ui.screens.playlist.components.PlaylistListScreenSortButton
 import paige.navic.ui.screens.playlist.components.playlistListScreenContent
 import paige.navic.ui.screens.playlist.dialogs.PlaylistCreateDialog
@@ -75,14 +76,19 @@ fun PlaylistListScreen(
 ) {
 	val preferenceManager = koinInject<PreferenceManager>()
 
-	val viewModel = koinViewModel<PlaylistListViewModel>()
+	val viewModel = koinViewModel<PlaylistListViewModel>(
+		viewModelStoreOwner = if (nested) {
+			LocalViewModelStoreOwner.current!!
+		} else {
+			koinInject<PersistentViewModelStoreOwner>()
+		}
+	)
 	val player = koinInject<MediaPlayerViewModel>()
 	val playlistsState by viewModel.playlistsState.collectAsState()
 	val selectedPlaylist by viewModel.selectedPlaylist.collectAsState()
 	val selectedSorting by viewModel.selectedSorting.collectAsStateWithLifecycle()
 	val selectedReversed by viewModel.selectedReversed.collectAsStateWithLifecycle()
 
-	val platformContext = LocalPlatformContext.current
 	val scrollManager = LocalBottomBarScrollManager.current
 
 	var shareId by remember { mutableStateOf<String?>(null) }
@@ -142,7 +148,6 @@ fun PlaylistListScreen(
 						shape = MaterialTheme.shapes.large,
 						containerColor = MaterialTheme.colorScheme.primary,
 						onClick = {
-							platformContext.clickSound()
 							createDialogShown = true
 						}
 					) {
@@ -201,7 +206,7 @@ fun PlaylistListScreen(
 		}
 	}
 
-	ErrorSnackbar(
+	ErrorSnackBar(
 		error = (playlistsState as? UiState.Error)?.error,
 		onClearError = { viewModel.clearError() }
 	)

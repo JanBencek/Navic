@@ -64,6 +64,14 @@ class PreferenceManager(
 	var customFormatWifi by preference("")
 	var customFormatCellular by preference("")
 
+	var downloadQualityWifi by preference(StreamingQuality.Lossless)
+	var downloadQualityCellular by preference(StreamingQuality.Lossless)
+	var isAdvancedDownloadTranscodingActive by preference(false)
+	var customDownloadMaxBitrateWifi by preference(0)
+	var customDownloadMaxBitrateCellular by preference(0)
+	var customDownloadFormatWifi by preference("")
+	var customDownloadFormatCellular by preference("")
+
 	var nowPlayingToolbarPosition by preference(ToolbarPosition.Bottom)
 	var nowPlayingSongInfo by preference(true)
 	var nowPlayingSliderStyle by preference(NowPlayingSliderStyle.Squiggly)
@@ -90,8 +98,7 @@ class PreferenceManager(
 	// theme related settings
 	var theme by preference(Theme.Dynamic)
 	var themeMode by preference(ThemeMode.System)
-	var dynamicAlbumViewTheme by preference(false)
-	var dynamicArtistViewTheme by preference(false)
+	var dynamicTheming by preference(false)
 	var paletteStyle by preference(PaletteStyle.TonalSpot)
 	var paletteSpec by preference(ColorSpec.SpecVersion.SPEC_2025)
 	var paletteAccentH by preference(0f)

@@ -42,10 +42,12 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigation3.ui.NavDisplay.popTransitionSpec
 import androidx.navigation3.ui.NavDisplay.predictivePopTransitionSpec
@@ -67,7 +69,7 @@ import paige.navic.domain.models.settings.ExplicitContentPlayback
 import paige.navic.shared.MediaPlayerViewModel
 import paige.navic.ui.components.dialogs.SideloadingDialog
 import paige.navic.ui.components.sheets.ChangelogSheet
-import paige.navic.ui.components.snackbars.NavicSnackbar
+import paige.navic.ui.components.snackbars.NavicSnackBar
 import paige.navic.ui.navigation.BottomSheetSceneStrategy
 import paige.navic.ui.navigation.NowPlayingSceneStrategy
 import paige.navic.ui.navigation.Screen
@@ -95,6 +97,7 @@ import paige.navic.ui.screens.settings.SettingsAppearanceScreen
 import paige.navic.ui.screens.settings.SettingsCustomHeadersScreen
 import paige.navic.ui.screens.settings.SettingsDataStorageScreen
 import paige.navic.ui.screens.settings.SettingsDeveloperScreen
+import paige.navic.ui.screens.settings.SettingsDownloadQualityScreen
 import paige.navic.ui.screens.settings.SettingsLogsScreen
 import paige.navic.ui.screens.settings.SettingsNowPlayingScreen
 import paige.navic.ui.screens.settings.SettingsPlaybackScreen
@@ -103,6 +106,7 @@ import paige.navic.ui.screens.settings.SettingsStreamingQualityScreen
 import paige.navic.ui.screens.settings.SettingsThemesScreen
 import paige.navic.ui.screens.share.ShareListScreen
 import paige.navic.ui.screens.song.SongDetailScreen
+import paige.navic.ui.screens.song.SongDetailSheet
 import paige.navic.ui.screens.song.SongListScreen
 import paige.navic.ui.screens.starred.StarredScreen
 import paige.navic.ui.theme.NavicTheme
@@ -123,7 +127,7 @@ private val config = SavedStateConfiguration {
 val LocalPlatformContext =
 	staticCompositionLocalOf<PlatformContext> { error("no platform context") }
 val LocalNavStack = staticCompositionLocalOf<NavBackStack<NavKey>> { error("no backstack") }
-val LocalSnackbarState = staticCompositionLocalOf<SnackbarHostState> { error("no snackbar state") }
+val LocalSnackBarState = staticCompositionLocalOf<SnackbarHostState> { error("no snack bar state") }
 val LocalSharedTransitionScope =
 	staticCompositionLocalOf<SharedTransitionScope> { error("no shared transition scope") }
 
@@ -150,12 +154,12 @@ fun App() {
 			Screen.Login
 		}
 	)
-	val snackbarState = remember { SnackbarHostState() }
+	val snackBarState = remember { SnackbarHostState() }
 	val snackBarManager = koinInject<SnackBarManager>()
 
 	LaunchedEffect(Unit) {
 		snackBarManager.events.collectLatest { event ->
-			snackbarState.showSnackbar(getString(event.resource, *event.args.toTypedArray()))
+			snackBarState.showSnackbar(getString(event.resource, *event.args.toTypedArray()))
 		}
 	}
 
@@ -180,7 +184,7 @@ fun App() {
 		CompositionLocalProvider(
 			LocalPlatformContext provides platformContext,
 			LocalNavStack provides backStack,
-			LocalSnackbarState provides snackbarState,
+			LocalSnackBarState provides snackBarState,
 			LocalSharedTransitionScope provides this@SharedTransitionLayout,
 			LocalBottomBarScrollManager provides scrollManager
 		) {
@@ -188,8 +192,8 @@ fun App() {
 				Scaffold(
 					modifier = Modifier.nestedScroll(scrollManager.connection),
 					snackbarHost = {
-						SnackbarHost(hostState = snackbarState) { snackbarData ->
-							NavicSnackbar(snackbarData = snackbarData)
+						SnackbarHost(hostState = snackBarState) { snackBarData ->
+							NavicSnackBar(snackBarData = snackBarData)
 						}
 					}
 				) { contentPadding ->
@@ -208,6 +212,17 @@ fun App() {
 							remember { NowPlayingSceneStrategy() },
 							remember { BottomSheetSceneStrategy() },
 							rememberListDetailSceneStrategy()
+						),
+						entryDecorators = listOf(
+							rememberSaveableStateHolderNavEntryDecorator(),
+
+							// makes it so that ViewModels get destroyed if their
+							// associated screen is removed from the back stack
+							//
+							// this might not always be desirable, so the
+							// `PersistentViewModelStoreOwner` class is used for
+							// certain ViewModels to work around this
+							rememberViewModelStoreNavEntryDecorator()
 						),
 						onBack = {
 							if (backStack.size >= 2) {
@@ -322,8 +337,21 @@ private fun entryProvider(
 		entry<Screen.CollectionDetail>(metadata = detailPane("root")) { key ->
 			CollectionDetailScreen(key.collectionId, key.tab)
 		}
-		entry<Screen.SongDetail>(metadata = detailPane("root")) { key ->
-			SongDetailScreen(key.songId)
+		entry<Screen.SongDetailScreen> { key ->
+			SongDetailScreen(
+				songId = key.songId,
+				initialCoverArtId = key.coverArtId
+			)
+		}
+		entry<Screen.SongDetailSheet>(
+			metadata = { key ->
+				BottomSheetSceneStrategy.bottomSheet(coverArtId = key.coverArtId)
+			}
+		) { key ->
+			SongDetailSheet(
+				songId = key.songId,
+				initialCoverArtId = key.coverArtId
+			)
 		}
 		entry<Screen.Search>(metadata = navtabMetadata) { key ->
 			SearchScreen(key.nested)
@@ -374,6 +402,9 @@ private fun entryProvider(
 		}
 		entry<Screen.Settings.StreamingQuality> {
 			SettingsStreamingQualityScreen()
+		}
+		entry<Screen.Settings.DownloadQuality> {
+			SettingsDownloadQualityScreen()
 		}
 		entry<Screen.Settings.Logs> {
 			SettingsLogsScreen()

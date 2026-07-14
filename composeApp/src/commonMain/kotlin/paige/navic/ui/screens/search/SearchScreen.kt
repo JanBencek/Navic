@@ -42,6 +42,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.dropUnlessResumed
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import navic.composeapp.generated.resources.Res
 import navic.composeapp.generated.resources.action_add_to_queue
 import navic.composeapp.generated.resources.action_remove_from_history
@@ -60,7 +61,6 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import paige.navic.LocalBottomBarScrollManager
 import paige.navic.LocalNavStack
-import paige.navic.LocalPlatformContext
 import paige.navic.data.database.entities.DownloadStatus
 import paige.navic.domain.manager.PreferenceManager
 import paige.navic.domain.models.DomainAlbum
@@ -91,6 +91,7 @@ import paige.navic.ui.components.layouts.artGridPlaceholder
 import paige.navic.ui.components.layouts.horizontalSection
 import paige.navic.ui.components.sheets.SongSheet
 import paige.navic.ui.core.UiState
+import paige.navic.ui.navigation.PersistentViewModelStoreOwner
 import paige.navic.ui.navigation.Screen
 import paige.navic.ui.screens.album.components.AlbumListScreenItem
 import paige.navic.ui.screens.album.viewmodels.AlbumListViewModel
@@ -114,7 +115,13 @@ fun SearchScreen(
 ) {
 	val preferenceManager = koinInject<PreferenceManager>()
 
-	val viewModel = koinViewModel<SearchViewModel>()
+	val viewModel = koinViewModel<SearchViewModel>(
+		viewModelStoreOwner = if (nested) {
+			LocalViewModelStoreOwner.current!!
+		} else {
+			koinInject<PersistentViewModelStoreOwner>()
+		}
+	)
 	val selectedSong by viewModel.selectedSong.collectAsStateWithLifecycle()
 	val selectedSongIsStarred by viewModel.selectedSongIsStarred.collectAsStateWithLifecycle()
 	val selectedSongRating by viewModel.selectedSongRating.collectAsStateWithLifecycle()
@@ -139,7 +146,6 @@ fun SearchScreen(
 	val isOnline by viewModel.isOnline.collectAsState()
 	val downloadedSongs by viewModel.downloadedSongs.collectAsState()
 
-	val platformContext = LocalPlatformContext.current
 	val player = koinInject<MediaPlayerViewModel>()
 	val backStack = LocalNavStack.current
 
@@ -278,7 +284,6 @@ fun SearchScreen(
 											modifier = Modifier
 												.background(MaterialTheme.colorScheme.surface),
 											onClick = {
-												platformContext.clickSound()
 												player.playNow(song)
 											},
 											onLongClick = { viewModel.selectSong(song) },
@@ -335,7 +340,7 @@ fun SearchScreen(
 													)
 												) DownloadStatus.DOWNLOADED else null,
 												onTrackInfo = dropUnlessResumed {
-													backStack.add(Screen.SongDetail(song.id))
+													backStack.add(Screen.SongDetailScreen(song.id, song.coverArtId))
 												},
 												onViewAlbum = song.albumId?.let { albumId ->
 													dropUnlessResumed {
@@ -427,7 +432,6 @@ fun SearchScreen(
 									val historyItem = searchHistory[index]
 									ListItem(
 										modifier = Modifier.clickable {
-											platformContext.clickSound()
 											query.clearText()
 											query.edit { insert(0, historyItem) }
 										},
@@ -441,7 +445,6 @@ fun SearchScreen(
 										},
 										trailingContent = {
 											IconButton(onClick = {
-												platformContext.clickSound()
 												viewModel.removeFromSearchHistory(historyItem)
 											}) {
 												Icon(

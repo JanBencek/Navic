@@ -18,6 +18,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.lifecycle.compose.dropUnlessResumed
+import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import navic.composeapp.generated.resources.Res
@@ -30,7 +31,6 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 import paige.navic.LocalBottomBarScrollManager
 import paige.navic.LocalNavStack
-import paige.navic.LocalPlatformContext
 import paige.navic.domain.manager.PreferenceManager
 import paige.navic.domain.models.DomainAlbum
 import paige.navic.domain.models.DomainArtist
@@ -43,8 +43,9 @@ import paige.navic.ui.components.layouts.PullToRefreshBox
 import paige.navic.ui.components.layouts.RootBottomBar
 import paige.navic.ui.components.layouts.RootTopBar
 import paige.navic.ui.components.sheets.ArtistSheet
-import paige.navic.ui.components.snackbars.ErrorSnackbar
+import paige.navic.ui.components.snackbars.ErrorSnackBar
 import paige.navic.ui.core.UiState
+import paige.navic.ui.navigation.PersistentViewModelStoreOwner
 import paige.navic.ui.navigation.Screen
 import paige.navic.ui.screens.artist.components.ArtistListScreenContent
 import paige.navic.ui.screens.artist.viewmodels.ArtistListViewModel
@@ -60,7 +61,12 @@ fun ArtistListScreen(
 
 	val viewModel = koinViewModel<ArtistListViewModel>(
 		key = listType.toString(),
-		parameters = { parametersOf(listType) }
+		parameters = { parametersOf(listType) },
+		viewModelStoreOwner = if (nested) {
+			LocalViewModelStoreOwner.current!!
+		} else {
+			koinInject<PersistentViewModelStoreOwner>()
+		}
 	)
 	val artistsState by viewModel.artistsState.collectAsState()
 	val selectedArtist by viewModel.selectedArtist.collectAsState()
@@ -111,7 +117,7 @@ fun ArtistListScreen(
 		}
 	}
 
-	ErrorSnackbar(
+	ErrorSnackBar(
 		error = (artistsState as? UiState.Error)?.error,
 		onClearError = { viewModel.clearError() }
 	)
@@ -131,7 +137,6 @@ fun ArtistsScreenItem(
 	onAddToQueue: () -> Unit,
 	onSetStarred: (starred: Boolean) -> Unit
 ) {
-	val platformContext = LocalPlatformContext.current
 	val backStack = LocalNavStack.current
 	val uriHandler = LocalUriHandler.current
 
@@ -140,7 +145,6 @@ fun ArtistsScreenItem(
 	Box(modifier) {
 		ArtGridItem(
 			onClick = dropUnlessResumed {
-				platformContext.clickSound()
 				backStack.add(Screen.ArtistDetail(artist.id))
 			},
 			onLongClick = onSelect,

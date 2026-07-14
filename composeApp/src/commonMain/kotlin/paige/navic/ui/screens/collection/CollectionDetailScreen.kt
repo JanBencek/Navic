@@ -52,7 +52,7 @@ import paige.navic.shared.MediaPlayerViewModel
 import paige.navic.ui.components.common.ContentUnavailable
 import paige.navic.ui.components.layouts.PullToRefreshBox
 import paige.navic.ui.components.layouts.RootBottomBar
-import paige.navic.ui.components.snackbars.ErrorSnackbar
+import paige.navic.ui.components.snackbars.ErrorSnackBar
 import paige.navic.ui.core.UiState
 import paige.navic.ui.screens.collection.components.CollectionDetailScreenFooterRow
 import paige.navic.ui.screens.collection.components.CollectionDetailScreenHeadingRow
@@ -123,7 +123,7 @@ fun CollectionDetailScreen(
 			}
 		}
 	}
-	val colorScheme = if (preferenceManager.dynamicAlbumViewTheme) {
+	val colorScheme = if (preferenceManager.dynamicTheming) {
 		rememberColorSchemeFromCoverArt(
 			coverArtId = collection?.coverArtId,
 			specVersion = ColorSpec.SpecVersion.SPEC_2025
@@ -380,7 +380,7 @@ fun CollectionDetailScreen(
 			}
 		}
 
-		ErrorSnackbar(
+		ErrorSnackBar(
 			error = (collectionState as? UiState.Error)?.error,
 			onClearError = { viewModel.clearError() }
 		)

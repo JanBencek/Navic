@@ -7,13 +7,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
 @Composable
-fun NavicSnackbar(
-	snackbarData: SnackbarData,
+fun NavicSnackBar(
+	snackBarData: SnackbarData,
 	modifier: Modifier = Modifier
 ) {
 	Snackbar(
 		modifier = modifier,
-		snackbarData = snackbarData,
+		snackbarData = snackBarData,
 		shape = MaterialTheme.shapes.large,
 		containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
 		contentColor = MaterialTheme.colorScheme.onSurface,

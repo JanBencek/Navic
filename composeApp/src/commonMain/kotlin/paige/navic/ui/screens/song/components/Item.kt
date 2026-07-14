@@ -212,7 +212,7 @@ fun SongListScreenItem(
 					onPlayNext = onPlayNext,
 					onAddToQueue = onAddToQueue,
 					onTrackInfo = dropUnlessResumed {
-						backStack.add(Screen.SongDetail(song.id))
+						backStack.add(Screen.SongDetailScreen(song.id, song.coverArtId))
 					},
 					onViewAlbum = song.albumId?.let { albumId ->
 						dropUnlessResumed {
@@ -231,7 +231,7 @@ fun SongListScreenItem(
 					downloadStatus = download?.status ?: DownloadStatus.NOT_DOWNLOADED,
 					onDownload = onDownload,
 					onCancelDownload = onCancelDownload,
-					onDeleteDownload = onDeleteDownload,
+					onDeleteDownload = onDeleteDownload
 				)
 			}
 		}

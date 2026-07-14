@@ -14,9 +14,10 @@ import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SheetValue
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.rememberBottomSheetState
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -36,8 +37,8 @@ import navic.composeapp.generated.resources.action_sleep_timer_enabled
 import navic.composeapp.generated.resources.action_view_shares
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
-import org.koin.compose.viewmodel.koinViewModel
 import paige.navic.LocalNavStack
+import paige.navic.domain.manager.LoginManager
 import paige.navic.domain.manager.SleepTimerManager
 import paige.navic.icons.Icons
 import paige.navic.icons.outlined.Bedtime
@@ -47,7 +48,6 @@ import paige.navic.ui.components.common.Form
 import paige.navic.ui.components.common.FormRow
 import paige.navic.ui.components.common.Monogram
 import paige.navic.ui.navigation.Screen
-import paige.navic.ui.screens.login.viewmodels.LoginViewModel
 import paige.navic.ui.theme.positive
 import paige.navic.util.core.label
 
@@ -57,14 +57,17 @@ fun AccountSheet(
 	onDismissRequest: () -> Unit
 ) {
 	val backStack = LocalNavStack.current
-	val loginViewModel = koinViewModel<LoginViewModel>()
+	val loginManager = koinInject<LoginManager>()
 	val settings = koinInject<Settings>()
 
 	var sleepTimerSheetOpen by rememberSaveable { mutableStateOf(false) }
 	val sleepTimerManager = koinInject<SleepTimerManager>()
 	val sleepTimerLeft = sleepTimerManager.timeLeft
 
-	val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+	val sheetState = rememberBottomSheetState(
+		initialValue = SheetValue.Hidden,
+		enabledValues = setOf(SheetValue.Hidden, SheetValue.Expanded)
+	)
 
 	val scope = rememberCoroutineScope()
 	val animateToDismiss = {
@@ -186,7 +189,7 @@ fun AccountSheet(
 				FormRow(
 					onClick = {
 						animateToDismiss()
-						loginViewModel.logout()
+						loginManager.logout()
 						backStack.clear()
 						backStack.add(Screen.Login)
 					},
