@@ -20,12 +20,14 @@ import paige.navic.domain.models.DomainSong
 import paige.navic.domain.models.DomainSongCollection
 import paige.navic.domain.models.settings.ExplicitContentPlayback
 import paige.navic.domain.repositories.PlayerStateRepository
+import paige.navic.domain.repositories.SongRepository
 import paige.navic.ui.core.PlayerUiState
 import paige.navic.util.core.Logger
 import kotlin.time.Duration.Companion.seconds
 
 abstract class MediaPlayerViewModel(
-	private val stateRepository: PlayerStateRepository,
+	protected val songRepository: SongRepository,
+	protected val stateRepository: PlayerStateRepository,
 	protected val connectivityManager: ConnectivityManager,
 	protected val downloadManager: DownloadManager,
 	protected val preferenceManager: PreferenceManager
@@ -102,7 +104,21 @@ abstract class MediaPlayerViewModel(
 				val restoredState = Json.decodeFromJsonElement<PlayerUiState>(
 					Json.parseToJsonElement(savedJson)
 				)
-				val stateToApply = restoredState.copy(isPaused = true, isLoading = false)
+
+				val fullQueue = if (restoredState.queueIds.isNotEmpty()) {
+					songRepository.getSongsByIds(restoredState.queueIds)
+				} else {
+					emptyList()
+				}
+
+				val currentSong = fullQueue.getOrNull(restoredState.currentIndex)
+
+				val stateToApply = restoredState.copy(
+					queue = fullQueue,
+					currentSong = currentSong,
+					isPaused = true,
+					isLoading = false
+				)
 
 				_uiState.value = stateToApply
 
@@ -142,7 +158,8 @@ abstract class MediaPlayerViewModel(
 
 	private suspend fun saveStateInternal(state: PlayerUiState) {
 		try {
-			val jsonString = Json.encodeToString(state)
+			val persistentState = state.toPersistentState()
+			val jsonString = Json.encodeToString(persistentState)
 			stateRepository.saveState(jsonString)
 		} catch (e: Exception) {
 			Logger.e("MediaPlayerViewModel", "Failed to save state!", e)

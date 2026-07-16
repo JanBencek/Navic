@@ -22,6 +22,7 @@ import paige.navic.domain.models.DomainRadio
 import paige.navic.domain.models.DomainSong
 import paige.navic.domain.models.DomainSongCollection
 import paige.navic.domain.repositories.PlayerStateRepository
+import paige.navic.domain.repositories.SongRepository
 import paige.navic.ui.core.PlayerUiState
 import paige.navic.util.core.Logger
 import platform.AVFAudio.AVAudioSession
@@ -75,6 +76,7 @@ import platform.darwin.dispatch_semaphore_wait
 
 class IOSMediaPlayerViewModel(
 	stateRepository: PlayerStateRepository,
+	songRepository: SongRepository,
 	downloadManager: DownloadManager,
 	connectivityManager: ConnectivityManager,
 	preferenceManager: PreferenceManager,
@@ -83,6 +85,7 @@ class IOSMediaPlayerViewModel(
 	private val snackBarManager: SnackBarManager
 ) : MediaPlayerViewModel(
 	stateRepository = stateRepository,
+	songRepository = songRepository,
 	connectivityManager = connectivityManager,
 	downloadManager = downloadManager,
 	preferenceManager = preferenceManager
