@@ -51,6 +51,7 @@ import kotlinx.coroutines.withContext
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.inject
 import paige.navic.data.database.dao.AlbumDao
+import paige.navic.data.database.dao.SongDao
 import paige.navic.data.database.mappers.toDomainModel
 import paige.navic.domain.manager.AndroidScrobbleManager
 import paige.navic.domain.manager.ConnectivityManager
@@ -66,6 +67,7 @@ import paige.navic.domain.models.DomainSong
 import paige.navic.domain.models.DomainSongCollection
 import paige.navic.domain.models.settings.ReplayGainMode
 import paige.navic.domain.repositories.PlayerStateRepository
+import paige.navic.domain.repositories.SongRepository
 import paige.navic.ui.core.PlayerUiState
 import paige.navic.util.core.Logger
 import paige.navic.util.core.ResourceProvider
@@ -286,16 +288,19 @@ class PlaybackService : MediaSessionService(), KoinComponent {
 
 class AndroidMediaPlayerViewModel(
 	stateRepository: PlayerStateRepository,
+	songRepository: SongRepository,
 	downloadManager: DownloadManager,
 	connectivityManager: ConnectivityManager,
 	preferenceManager: PreferenceManager,
 	private val application: Application,
 	private val albumDao: AlbumDao,
+	private val songDao: SongDao,
 	private val platformContext: CoilPlatformContext,
 	private val sessionManager: SessionManager,
 	private val snackBarManager: SnackBarManager
 ) : MediaPlayerViewModel(
 	stateRepository = stateRepository,
+	songRepository = songRepository,
 	connectivityManager = connectivityManager,
 	downloadManager = downloadManager,
 	preferenceManager = preferenceManager
@@ -650,6 +655,7 @@ class AndroidMediaPlayerViewModel(
 				val newQueue = state.queue + song
 				state.copy(
 					queue = newQueue,
+					queueIds = newQueue.map { it.id },
 					currentIndex = if (state.currentIndex == -1) 0 else state.currentIndex,
 					currentSong = if (state.currentIndex == -1) song else state.currentSong
 				)
@@ -678,6 +684,7 @@ class AndroidMediaPlayerViewModel(
 				val newQueue = state.queue + songs
 				state.copy(
 					queue = newQueue,
+					queueIds = newQueue.map { it.id },
 					currentIndex = if (state.currentIndex == -1) 0 else state.currentIndex,
 					currentSong = if (state.currentIndex == -1) songs.firstOrNull() else state.currentSong
 				)
@@ -701,6 +708,7 @@ class AndroidMediaPlayerViewModel(
 				}
 				state.copy(
 					queue = newQueue,
+					queueIds = newQueue.map { it.id },
 					currentIndex = newIndex,
 					currentSong = if (newIndex == -1) null else newQueue[newIndex]
 				)
@@ -724,6 +732,7 @@ class AndroidMediaPlayerViewModel(
 				}
 				state.copy(
 					queue = newQueue,
+					queueIds = newQueue.map { it.id },
 					currentIndex = newIndex,
 					currentSong = if (newIndex == -1) null else newQueue[newIndex]
 				)
@@ -736,6 +745,7 @@ class AndroidMediaPlayerViewModel(
 			_uiState.update {
 				it.copy(
 					queue = emptyList(),
+					queueIds = emptyList(),
 					currentSong = null,
 					currentIndex = -1,
 					progress = 0f
@@ -770,6 +780,7 @@ class AndroidMediaPlayerViewModel(
 						state.queue.slice(0..state.currentIndex) + song + state.queue.slice(state.currentIndex + 1..<state.queue.size)
 				state.copy(
 					queue = newQueue,
+					queueIds = newQueue.map { it.id },
 					currentIndex = if (state.currentIndex == -1) 0 else state.currentIndex,
 					currentSong = if (state.currentIndex == -1) song else state.currentSong
 				)
@@ -800,6 +811,7 @@ class AndroidMediaPlayerViewModel(
 						)
 				state.copy(
 					queue = newQueue,
+					queueIds = newQueue.map { it.id },
 					currentIndex = if (state.currentIndex == -1) 0 else state.currentIndex,
 					currentSong = if (state.currentIndex == -1) newCollection.firstOrNull() else state.currentSong
 				)
@@ -873,6 +885,7 @@ class AndroidMediaPlayerViewModel(
 			_uiState.update { state ->
 				state.copy(
 					queue = listOf(dummyRadioSong),
+					queueIds = listOf(radioId),
 					currentIndex = 0,
 					currentSong = dummyRadioSong,
 					isLoading = true
@@ -898,6 +911,7 @@ class AndroidMediaPlayerViewModel(
 			_uiState.update { state ->
 				state.copy(
 					queue = shuffledSongs,
+					queueIds = shuffledSongs.map { it.id },
 					currentIndex = 0,
 					currentSong = shuffledSongs.firstOrNull()
 				)
