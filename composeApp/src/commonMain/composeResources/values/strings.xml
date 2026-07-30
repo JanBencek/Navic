@@ -176,6 +176,9 @@
 	<string name="option_explicit_playback_skip">Skip explicit songs</string>
 	<string name="option_explicit_playback_skip_session">Skip explicit songs for this session</string>
 	<string name="option_dynamic_theming">Dynamic theming</string>
+	<string name="option_cover_art_action">Cover art tap action</string>
+	<string name="option_cover_art_action_disabled">Disabled</string>
+	<string name="option_cover_art_action_show_lyrics">Show lyrics</string>
 
 	<string name="info_status_idle">Idle</string>
 	<string name="info_status_calculating">Calculating...</string>

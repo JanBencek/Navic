@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import kotlinx.collections.immutable.toImmutableList
 import navic.composeapp.generated.resources.Res
 import navic.composeapp.generated.resources.action_lyrics
+import navic.composeapp.generated.resources.option_cover_art_action
 import navic.composeapp.generated.resources.option_lyrics_autoscroll
 import navic.composeapp.generated.resources.option_lyrics_beat_by_beat
 import navic.composeapp.generated.resources.option_lyrics_blur
@@ -38,6 +39,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import paige.navic.LocalPlatformContext
 import paige.navic.domain.manager.PreferenceManager
+import paige.navic.domain.models.settings.CoverArtTapAction
 import paige.navic.domain.models.settings.NowPlayingBackgroundStyle
 import paige.navic.domain.models.settings.ToolbarPosition
 import paige.navic.ui.components.common.Form
@@ -77,6 +79,14 @@ fun SettingsNowPlayingScreen() {
 						title = { Text(stringResource(Res.string.option_swipe_to_skip)) },
 						value = preferenceManager.swipeToSkip,
 						onSetValue = { preferenceManager.swipeToSkip = it }
+					)
+
+					SettingSelectionRow(
+						items = CoverArtTapAction.entries.toImmutableList(),
+						label = { stringResource(it.displayName) },
+						selection = preferenceManager.nowPlayingCoverArtAction,
+						onSelect = { preferenceManager.nowPlayingCoverArtAction = it },
+						title = { Text(stringResource(Res.string.option_cover_art_action)) }
 					)
 
 					SettingSelectionRow(
