@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -77,13 +78,16 @@ fun LyricsPriorityDialog(
 					) {
 						draggableItems(
 							state = draggableState,
-							items = config.priority,
-							key = { provider -> provider.name }
+							items = config.providers,
+							key = { provider -> provider.id }
 						) { provider, isDragging ->
 							ProviderRow(
 								provider = provider,
+								state = draggableState,
 								isDragging = isDragging,
-								state = draggableState
+								onToggleEnabled = {
+									viewModel.toggleEnabled(provider.id)
+								}
 							)
 						}
 					}
@@ -104,9 +108,10 @@ fun LyricsPriorityDialog(
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun ProviderRow(
-	state: DraggableListState,
 	provider: LyricsProvider,
-	isDragging: Boolean
+	state: DraggableListState,
+	isDragging: Boolean,
+	onToggleEnabled: () -> Unit
 ) {
 	val elevation by animateDpAsState(
 		if (isDragging) 4.dp else 0.dp,
@@ -124,11 +129,15 @@ private fun ProviderRow(
 			horizontalArrangement = Arrangement.SpaceBetween,
 			verticalAlignment = Alignment.CenterVertically
 		) {
-			Text(provider.displayName)
+			Checkbox(
+				checked = provider.enabled,
+				onCheckedChange = { _ -> onToggleEnabled() }
+			)
+			Text(provider.id.name.lowercase().replaceFirstChar { it.uppercase() })
 			IconButton(
 				modifier = Modifier.dragHandle(
 					state = state,
-					key = provider.name
+					key = provider.id
 				),
 				onClick = {}
 			) {

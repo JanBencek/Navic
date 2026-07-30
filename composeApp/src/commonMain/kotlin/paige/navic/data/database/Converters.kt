@@ -4,8 +4,6 @@ import androidx.room3.ColumnTypeConverter
 import paige.navic.domain.models.DomainContributor
 import paige.navic.domain.models.DomainExplicitStatus
 import paige.navic.domain.models.DomainReplayGain
-import paige.navic.domain.models.lyrics.LyricsProvider
-import paige.navic.util.core.Logger
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Instant
@@ -89,22 +87,6 @@ class Converters {
 			baseGain = parts[4].toFloatOrNull(),
 			fallbackGain = parts[5].toFloatOrNull()
 		)
-	}
-
-	//Lyrics
-	@ColumnTypeConverter
-	fun fromLyricsProvider(provider: LyricsProvider): String {
-		return provider.name
-	}
-
-	@ColumnTypeConverter
-	fun toLyricsProvider(name: String): LyricsProvider {
-		return try {
-			LyricsProvider.valueOf(name)
-		} catch (e: Exception) {
-			Logger.w("Converters", "Unknown lyrics provider", e)
-			LyricsProvider.SUBSONIC
-		}
 	}
 
 	// DomainExplicitStatus

@@ -54,12 +54,15 @@ class LyricsRepository(
 	}
 
 	private fun getConfig(): LyricsConfig {
-		val raw = settings.getStringOrNull(LyricsConfig.KEY)
-		return try {
-			if (raw != null) json.decodeFromString<LyricsConfig>(raw)
-			else LyricsConfig()
-		} catch (_: Exception) {
-			LyricsConfig()
+		try {
+			val raw = settings.getStringOrNull(LyricsConfig.KEY)
+				?: return LyricsConfig.Default
+			val config: LyricsConfig = json.decodeFromString(raw)
+			return config.takeIf { it.version == LyricsConfig.VERSION }
+				?: LyricsConfig.Default
+		} catch (ex: Exception) {
+			Logger.w("LyricsRepository", "failed to load config", ex)
+			return LyricsConfig.Default
 		}
 	}
 
@@ -69,9 +72,9 @@ class LyricsRepository(
 			if (cached != null) {
 				val parsed = LyricsContentParser.parse(cached.rawContent)
 				if (!parsed.isNullOrEmpty()) return LyricsResult(
-					parsed,
-					cached.provider,
-					cached.rawContent
+					lines = parsed,
+					providerName = cached.providerName,
+					rawContent = cached.rawContent
 				)
 			}
 		} catch (ex: Exception) {
@@ -79,24 +82,24 @@ class LyricsRepository(
 		}
 
 		val currentConfig = getConfig()
-		for (provider in currentConfig.priority) {
+		for (provider in currentConfig.providers.filter { it.enabled }) {
 			try {
 				var rawContentToCache: String? = null
 
-				val parsedLyrics = when (provider) {
-					LyricsProvider.LYRICS_PLUS -> {
+				val parsedLyrics = when (provider.id) {
+					LyricsProvider.Id.LYRICS_PLUS -> {
 						val raw = fetchRawLyricsPlus(song, currentConfig)
 						rawContentToCache = raw
 						raw?.let { LyricsContentParser.parse(it) }
 					}
 
-					LyricsProvider.LRCLIB -> {
+					LyricsProvider.Id.LRCLIB -> {
 						val raw = fetchRawLrcLib(song, currentConfig)
 						rawContentToCache = raw
 						raw?.let { LyricsContentParser.parse(it) }
 					}
 
-					LyricsProvider.SUBSONIC -> {
+					LyricsProvider.Id.SUBSONIC -> {
 						val subsonicLyrics = sessionManager.api.getLyrics(song.id).firstOrNull()
 
 						val lines = subsonicLyrics?.lines?.flatMap { line ->
@@ -133,7 +136,7 @@ class LyricsRepository(
 						rawContentToCache?.let { content ->
 							val entity = LyricEntity(
 								songId = song.id,
-								provider = provider,
+								providerName = provider.id.name,
 								rawContent = content
 							)
 							lyricDao.insertLyrics(entity)
@@ -141,10 +144,14 @@ class LyricsRepository(
 					} catch (e: Exception) {
 						Logger.e("LyricRepository", "Failed to cache lyrics for ${song.title}", e)
 					}
-					return LyricsResult(parsedLyrics, provider, rawContentToCache)
+					return LyricsResult(
+						lines = parsedLyrics,
+						providerName = provider.id.name,
+						rawContent = rawContentToCache
+					)
 				}
 			} catch (e: Exception) {
-				Logger.e("LyricRepository", "Provider ${provider.name} failed!", e)
+				Logger.e("LyricRepository", "Provider ${provider.id.name} failed!", e)
 				continue
 			}
 		}
