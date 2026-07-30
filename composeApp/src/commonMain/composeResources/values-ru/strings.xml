@@ -416,4 +416,7 @@
     <string name="option_download_format_wifi">Формат загрузки по Wi-Fi</string>
     <string name="option_stream_format_cellular">Формат стриминга по мобильной сети</string>
     <string name="option_stream_format_wifi">Формат стриминга по Wi-Fi</string>
+    <string name="option_dynamic_theming">Динамическое оформление</string>
+    <string name="info_transcoding_defaults">Если оставить любое из этих полей пустым, оно будет пропущено, и решение примет сервер.</string>
+    <string name="notice_play_next">Воспроизвести следующим.</string>
 </resources>
