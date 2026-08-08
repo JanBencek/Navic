@@ -100,6 +100,7 @@ import paige.navic.ui.screens.artist.viewmodels.ArtistListViewModel
 import paige.navic.ui.screens.search.components.SearchScreenChips
 import paige.navic.ui.screens.search.components.SearchScreenTopBar
 import paige.navic.ui.screens.search.viewmodels.SearchViewModel
+import paige.navic.util.core.buildSongInfoString
 
 enum class SearchCategory(val res: StringResource) {
 	ALL(Res.string.title_all),
@@ -108,6 +109,7 @@ enum class SearchCategory(val res: StringResource) {
 	ARTISTS(Res.string.title_artists)
 }
 
+// TODO: clean this up, holy shit
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
@@ -290,7 +292,10 @@ fun SearchScreen(
 											content = { Text(song.title) },
 											supportingContent = {
 												MarqueeText(
-													"${song.albumTitle ?: ""} • ${song.artistName} • ${song.year ?: ""}"
+													buildSongInfoString(
+														song = song,
+														onClickArtist = { backStack.add(Screen.ArtistDetail(it)) }
+													)
 												)
 											},
 											leadingContent = {

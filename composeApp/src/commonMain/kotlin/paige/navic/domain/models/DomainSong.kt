@@ -41,5 +41,7 @@ data class DomainSong(
 	val starredAt: Instant?,
 	val coverArtId: String?,
 	val musicBrainzId: String?,
-	val explicitStatus: DomainExplicitStatus
+	val explicitStatus: DomainExplicitStatus,
+	val artists: List<DomainSongArtist>,
+	val albumArtists: List<DomainSongArtist>
 )

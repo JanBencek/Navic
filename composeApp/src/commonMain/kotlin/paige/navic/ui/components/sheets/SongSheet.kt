@@ -50,6 +50,7 @@ import navic.composeapp.generated.resources.info_download_failed
 import navic.composeapp.generated.resources.option_playback_speed
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
+import paige.navic.LocalNavStack
 import paige.navic.data.database.entities.DownloadStatus
 import paige.navic.domain.manager.PreferenceManager
 import paige.navic.domain.manager.SleepTimerManager
@@ -77,11 +78,13 @@ import paige.navic.icons.outlined.Star
 import paige.navic.ui.components.common.CoverArt
 import paige.navic.ui.components.common.MarqueeText
 import paige.navic.ui.components.common.RatingRow
+import paige.navic.ui.navigation.Screen
+import paige.navic.ui.theme.NavicTheme
 import paige.navic.ui.theme.positive
 import paige.navic.util.core.InlineExplicitIcon
+import paige.navic.util.core.buildSongInfoString
 import paige.navic.util.core.label
 import paige.navic.util.ui.rememberColorSchemeFromCoverArt
-import paige.navic.ui.theme.NavicTheme
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -118,6 +121,8 @@ fun SongSheet(
 	val contentPadding = PaddingValues(horizontal = 16.dp)
 
 	val colorScheme = if (useSongTheme) rememberColorSchemeFromCoverArt(song.coverArtId) else null
+
+	val backStack = LocalNavStack.current
 
 	NavicTheme(colorScheme) {
 		val colors = ListItemDefaults.colors(
@@ -159,7 +164,13 @@ fun SongSheet(
 				},
 				supportingContent = {
 					MarqueeText(
-						"${song.albumTitle ?: ""} • ${song.artistName} • ${song.year ?: ""}"
+						buildSongInfoString(
+							song = song,
+							onClickArtist = {
+								onDismissRequest()
+								backStack.add(Screen.ArtistDetail(it))
+							}
+						)
 					)
 				},
 				leadingContent = {

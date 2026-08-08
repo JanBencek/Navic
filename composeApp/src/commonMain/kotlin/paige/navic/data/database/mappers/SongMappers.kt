@@ -5,6 +5,7 @@ import paige.navic.domain.models.DomainContributor
 import paige.navic.domain.models.DomainExplicitStatus
 import paige.navic.domain.models.DomainReplayGain
 import paige.navic.domain.models.DomainSong
+import paige.navic.domain.models.DomainSongArtist
 import kotlin.time.Duration.Companion.seconds
 import dev.zt64.subsonic.api.model.Song as ApiSong
 
@@ -66,6 +67,18 @@ fun ApiSong.toEntity(
 		ApiSong.ExplicitStatus.EXPLICIT -> DomainExplicitStatus.Explicit
 		ApiSong.ExplicitStatus.CLEAN -> DomainExplicitStatus.Clean
 		else -> DomainExplicitStatus.Unknown
+	},
+	artists = this.artists.map {
+		DomainSongArtist(
+			id = it.id,
+			name = it.name
+		)
+	},
+	albumArtists = this.albumArtists.map {
+		DomainSongArtist(
+			id = it.id,
+			name = it.name
+		)
 	}
 )
 
@@ -103,7 +116,9 @@ fun SongEntity.toDomainModel() = DomainSong(
 	musicBrainzId = this.musicBrainzId,
 	contributors = this.contributors,
 	replayGain = this.replayGain,
-	explicitStatus = this.explicitStatus
+	explicitStatus = this.explicitStatus,
+	artists = this.artists,
+	albumArtists = this.albumArtists
 )
 
 fun DomainSong.toEntity() = SongEntity(
@@ -140,5 +155,7 @@ fun DomainSong.toEntity() = SongEntity(
 	musicBrainzId = this.musicBrainzId,
 	replayGain = this.replayGain,
 	contributors = this.contributors,
-	explicitStatus = this.explicitStatus
+	explicitStatus = this.explicitStatus,
+	artists = this.artists,
+	albumArtists = this.albumArtists
 )

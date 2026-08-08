@@ -324,7 +324,9 @@ class IOSMediaPlayerViewModel(
 			filePath = radio.streamUrl,
 			starredAt = null,
 			musicBrainzId = null,
-			explicitStatus = DomainExplicitStatus.Unknown
+			explicitStatus = DomainExplicitStatus.Unknown,
+			artists = emptyList(),
+			albumArtists = emptyList()
 		)
 
 		val url = NSURL.URLWithString(radio.streamUrl)
