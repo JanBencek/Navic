@@ -72,7 +72,7 @@ fun AnnotatedString.Builder.appendArtists(
 			append(artist.name)
 		}
 		if (index != artists.lastIndex) {
-			appendBulletPoint()
+			append(", ")
 		}
 	}
 }
