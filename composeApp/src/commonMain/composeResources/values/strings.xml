@@ -203,6 +203,8 @@
 	<string name="info_in_use">(in use)</string>
 	<string name="info_explicit">Explicit</string>
 	<string name="info_transcoding_defaults">Leaving any of these empty will omit them and allow the server to decide.</string>
+	<string name="info_external_song">External</string>
+	<string name="info_external_song_description">This song was marked as external by your server, so you may not be able to listen to it.</string>
 
 	<string name="option_now_playing_toolbar_position">Toolbar position</string>
 	<string name="option_position_top">Top</string>

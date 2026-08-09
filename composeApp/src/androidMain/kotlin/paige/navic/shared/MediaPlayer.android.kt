@@ -929,7 +929,8 @@ class AndroidMediaPlayerViewModel(
 				musicBrainzId = null,
 				explicitStatus = DomainExplicitStatus.Unknown,
 				artists = emptyList(),
-				albumArtists = emptyList()
+				albumArtists = emptyList(),
+				isExternal = false
 			)
 
 			val metadata = MediaMetadata.Builder()

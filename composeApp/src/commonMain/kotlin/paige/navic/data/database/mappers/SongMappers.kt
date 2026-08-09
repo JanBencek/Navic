@@ -79,7 +79,8 @@ fun ApiSong.toEntity(
 			id = it.id,
 			name = it.name
 		)
-	}
+	},
+	isExternal = this.isExternal
 )
 
 fun SongEntity.toDomainModel() = DomainSong(
@@ -118,7 +119,8 @@ fun SongEntity.toDomainModel() = DomainSong(
 	replayGain = this.replayGain,
 	explicitStatus = this.explicitStatus,
 	artists = this.artists,
-	albumArtists = this.albumArtists
+	albumArtists = this.albumArtists,
+	isExternal = this.isExternal
 )
 
 fun DomainSong.toEntity() = SongEntity(
@@ -157,5 +159,6 @@ fun DomainSong.toEntity() = SongEntity(
 	contributors = this.contributors,
 	explicitStatus = this.explicitStatus,
 	artists = this.artists,
-	albumArtists = this.albumArtists
+	albumArtists = this.albumArtists,
+	isExternal = this.isExternal
 )

@@ -70,7 +70,7 @@ import paige.navic.ui.components.common.Waveform
 import paige.navic.ui.components.dialogs.QueueDuplicateDialog
 import paige.navic.ui.navigation.Screen
 import paige.navic.util.core.InlineExplicitIcon
-import paige.navic.util.core.appendArtists
+import paige.navic.util.core.buildSongInfoString
 import paige.navic.util.core.toHoursMinutesSeconds
 import paige.navic.util.ui.segmentedShapes
 
@@ -207,12 +207,12 @@ fun CollectionDetailScreenSongRow(
 						inlineContent = InlineExplicitIcon
 					)
 					MarqueeText(
-						buildAnnotatedString {
-							appendArtists(
-								artists = song.artists,
-								onClick = { backStack.add(Screen.ArtistDetail(it)) }
-							)
-						},
+						text = buildSongInfoString(
+							song = song,
+							onClickArtist = { backStack.add(Screen.ArtistDetail(it)) },
+							showYear = false,
+							showAlbum = false
+						),
 						style = MaterialTheme.typography.bodySmall
 					)
 				}

@@ -43,5 +43,6 @@ data class DomainSong(
 	val musicBrainzId: String?,
 	val explicitStatus: DomainExplicitStatus,
 	val artists: List<DomainSongArtist>,
-	val albumArtists: List<DomainSongArtist>
+	val albumArtists: List<DomainSongArtist>,
+	val isExternal: Boolean
 )
