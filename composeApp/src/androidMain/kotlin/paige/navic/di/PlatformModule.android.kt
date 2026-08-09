@@ -13,7 +13,6 @@ import paige.navic.domain.manager.LogManager
 import paige.navic.domain.manager.PermissionManager
 import paige.navic.domain.manager.ShareManager
 import paige.navic.domain.manager.StorageManager
-import paige.navic.domain.repositories.PlayerStateRepository
 import paige.navic.shared.AndroidMediaPlayerViewModel
 import paige.navic.shared.MediaPlayerViewModel
 import paige.navic.util.core.PlatformType
@@ -40,14 +39,6 @@ actual val platformModule = module {
 			.setDriver(BundledSQLiteDriver())
 			.fallbackToDestructiveMigration(true)
 			.build()
-	}
-
-	single<PlayerStateRepository> {
-		val context = androidApplication()
-		val producePath = {
-			context.filesDir.resolve(PlayerStateRepository.DATASTORE_FILE_NAME).absolutePath
-		}
-		PlayerStateRepository(PlayerStateRepository.getInstance(producePath))
 	}
 
 	single<MediaPlayerViewModel> {

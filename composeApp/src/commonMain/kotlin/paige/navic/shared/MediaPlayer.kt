@@ -8,9 +8,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.decodeFromJsonElement
 import paige.navic.domain.manager.ConnectivityManager
 import paige.navic.domain.manager.DownloadManager
 import paige.navic.domain.manager.PreferenceManager
@@ -22,7 +22,6 @@ import paige.navic.domain.models.settings.ExplicitContentPlayback
 import paige.navic.domain.repositories.PlayerStateRepository
 import paige.navic.domain.repositories.SongRepository
 import paige.navic.ui.core.PlayerUiState
-import paige.navic.util.core.Logger
 import kotlin.time.Duration.Companion.seconds
 
 abstract class MediaPlayerViewModel(
@@ -117,23 +116,14 @@ abstract class MediaPlayerViewModel(
 	}
 
 	private suspend fun restoreState() {
-		val savedJson = stateRepository.loadState()
-		if (!savedJson.isNullOrBlank()) {
-			try {
-				val restoredState = Json.decodeFromJsonElement<PlayerUiState>(
-					Json.parseToJsonElement(savedJson)
-				)
-				val stateToApply = restoredState.copy(isPaused = true, isLoading = false)
-
-				_uiState.value = stateToApply
-
-				syncPlayerWithState(stateToApply)
-				checkAndAutoFillQueue()
-
-			} catch (e: Exception) {
-				Logger.e("MediaPlayerViewModel", "Failed to restore state!", e)
-				_uiState.value = PlayerUiState()
-			}
+		val savedState = stateRepository.state
+			.filterNotNull()
+			.firstOrNull()
+			?.copy(isPaused = true, isLoading = false)
+		if (savedState != null) {
+			_uiState.value = savedState
+			syncPlayerWithState(savedState)
+			checkAndAutoFillQueue()
 		}
 	}
 
@@ -149,7 +139,7 @@ abstract class MediaPlayerViewModel(
 						old.isShuffleEnabled == new.isShuffleEnabled
 				}
 				.collect { state ->
-					saveStateInternal(state)
+					stateRepository.setState(state)
 				}
 		}
 
@@ -157,17 +147,8 @@ abstract class MediaPlayerViewModel(
 			uiState
 				.debounce(2.seconds)
 				.collect { state ->
-					saveStateInternal(state)
+					stateRepository.setState(state)
 				}
-		}
-	}
-
-	private suspend fun saveStateInternal(state: PlayerUiState) {
-		try {
-			val jsonString = Json.encodeToString(state)
-			stateRepository.saveState(jsonString)
-		} catch (e: Exception) {
-			Logger.e("MediaPlayerViewModel", "Failed to save state!", e)
 		}
 	}
 }

@@ -14,7 +14,6 @@ import paige.navic.domain.manager.LogManager
 import paige.navic.domain.manager.PermissionManager
 import paige.navic.domain.manager.ShareManager
 import paige.navic.domain.manager.StorageManager
-import paige.navic.domain.repositories.PlayerStateRepository
 import paige.navic.shared.IOSMediaPlayerViewModel
 import paige.navic.shared.MediaPlayerViewModel
 import paige.navic.util.core.PlatformType
@@ -41,21 +40,6 @@ actual val platformModule = module {
 			.setDriver(BundledSQLiteDriver())
 			.fallbackToDestructiveMigration(true)
 			.build()
-	}
-
-	single<PlayerStateRepository> {
-		val producePath = {
-			@OptIn(ExperimentalForeignApi::class)
-			val directory = NSFileManager.defaultManager.URLForDirectory(
-				directory = NSDocumentDirectory,
-				inDomain = NSUserDomainMask,
-				appropriateForURL = null,
-				create = true,
-				error = null
-			)
-			directory?.path + "/${PlayerStateRepository.DATASTORE_FILE_NAME}"
-		}
-		PlayerStateRepository(PlayerStateRepository.getInstance(producePath))
 	}
 
 	viewModel<MediaPlayerViewModel> {
