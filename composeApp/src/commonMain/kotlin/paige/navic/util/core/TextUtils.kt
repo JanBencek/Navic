@@ -128,7 +128,7 @@ fun buildSongInfoString(
 			appendBulletPoint()
 		}
 
-		if (showYear) {
+		if (showYear && song.year != null) {
 			append("${song.year}")
 			appendBulletPoint()
 		}
