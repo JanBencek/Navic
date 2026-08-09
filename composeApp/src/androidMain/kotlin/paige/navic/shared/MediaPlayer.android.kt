@@ -5,6 +5,7 @@ import android.app.PendingIntent
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.media.audiofx.Equalizer
 import android.net.Uri
 import android.os.Bundle
 import androidx.annotation.OptIn
@@ -38,8 +39,10 @@ import coil3.imageLoader
 import com.google.common.util.concurrent.Futures
 import com.google.common.util.concurrent.ListenableFuture
 import com.google.common.util.concurrent.MoreExecutors
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
@@ -55,6 +58,7 @@ import paige.navic.data.database.mappers.toDomainModel
 import paige.navic.domain.manager.AndroidScrobbleManager
 import paige.navic.domain.manager.ConnectivityManager
 import paige.navic.domain.manager.DownloadManager
+import paige.navic.domain.manager.EqualiserManager
 import paige.navic.domain.manager.PreferenceManager
 import paige.navic.domain.manager.SessionManager
 import paige.navic.domain.manager.SnackBarManager
@@ -78,6 +82,8 @@ import coil3.PlatformContext as CoilPlatformContext
 
 @OptIn(UnstableApi::class)
 class PlaybackService : MediaSessionService(), KoinComponent {
+	private val scope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+
 	private var mediaSession: MediaSession? = null
 	private val serviceScope = MainScope()
 	private var scrobbleManager: AndroidScrobbleManager? = null
@@ -88,6 +94,9 @@ class PlaybackService : MediaSessionService(), KoinComponent {
 	private val syncManager: SyncManager by inject()
 	private val sessionManager: SessionManager by inject()
 	private val preferenceManager: PreferenceManager by inject()
+	private val equaliserManager: EqualiserManager by inject()
+
+	private var equaliser: Equalizer? = null
 
 	override fun onCreate() {
 		super.onCreate()
@@ -172,6 +181,8 @@ class PlaybackService : MediaSessionService(), KoinComponent {
 			.setCustomLayout(makeButtons(player))
 			.build()
 
+		makeEqualiser(player.audioSessionId)
+
 		player.addListener(object : Player.Listener {
 			override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
 				mediaSession?.setCustomLayout(makeButtons(player))
@@ -180,7 +191,17 @@ class PlaybackService : MediaSessionService(), KoinComponent {
 			override fun onRepeatModeChanged(repeatMode: Int) {
 				mediaSession?.setCustomLayout(makeButtons(player))
 			}
+
+			override fun onAudioSessionIdChanged(audioSessionId: Int) {
+				makeEqualiser(player.audioSessionId)
+			}
 		})
+
+		scope.launch(Dispatchers.Main) {
+			equaliserManager.config.collect {
+				updateEqualiser()
+			}
+		}
 	}
 
 	override fun onGetSession(controllerInfo: MediaSession.ControllerInfo): MediaSession? {
@@ -192,6 +213,8 @@ class PlaybackService : MediaSessionService(), KoinComponent {
 	}
 
 	override fun onDestroy() {
+		equaliser?.release()
+		equaliser = null
 		scrobbleManager?.release()
 		serviceScope.cancel()
 		stopForeground(STOP_FOREGROUND_REMOVE)
@@ -243,6 +266,53 @@ class PlaybackService : MediaSessionService(), KoinComponent {
 			}
 
 			return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
+		}
+	}
+
+	private fun makeEqualiser(sessionId: Int) {
+		equaliser?.release()
+		try {
+			val equaliser = Equalizer(0, sessionId).apply {
+				enabled = true
+			}
+
+			this.equaliser = equaliser
+
+			val bandLowerRange = equaliser.bandLevelRange.firstOrNull()?.toFloat() ?: -1500f
+			val bandUpperRange = equaliser.bandLevelRange.lastOrNull()?.toFloat() ?: 1500f
+			val bandCount = equaliser.numberOfBands.toInt()
+
+			scope.launch {
+				equaliserManager.setConfig(
+					equaliserManager.config.value.copy(
+						bandLowerRange = bandLowerRange,
+						bandUpperRange = bandUpperRange,
+						bandCount = bandCount
+					)
+				)
+			}
+
+			updateEqualiser()
+		} catch (ex: Exception) {
+			Logger.e("PlaybackService", "error while configuring eq", ex)
+		}
+	}
+
+	private fun updateEqualiser() {
+		val equaliser = equaliser ?: return
+		val config = equaliserManager.config.value
+		try {
+			// reset all band levels first in case an item in
+			// config.bandLevels was removed (e.g. user presses
+			// reset in the equaliser settings)
+			repeat(equaliser.numberOfBands.toInt()) { band ->
+				equaliser.setBandLevel(band.toShort(), 0)
+			}
+			config.bandLevels.forEach { (band, level) ->
+				equaliser.setBandLevel(band.toShort(), level.toInt().toShort())
+			}
+		} catch (ex: Exception) {
+			Logger.e("PlaybackService", "error while setting eq band levels", ex)
 		}
 	}
 
@@ -486,13 +556,19 @@ class AndroidMediaPlayerViewModel(
 			.firstOrNull { index -> !isExplicit(queue[index]) }
 
 		if (nextAvailableIdx == null) {
-			Logger.i("MediaPlayer", "pausing because this song is unavailable and there isn't anything to skip to")
+			Logger.i(
+				"MediaPlayer",
+				"pausing because this song is unavailable and there isn't anything to skip to"
+			)
 			controller?.pause()
 			return
 		}
 
 		if (nextAvailableIdx <= currentIdx) {
-			Logger.i("MediaPlayer", "skipping and pausing because the last song in the queue was unavailable")
+			Logger.i(
+				"MediaPlayer",
+				"skipping and pausing because the last song in the queue was unavailable"
+			)
 			controller?.seekTo(nextAvailableIdx, 0L)
 			controller?.pause()
 		} else {

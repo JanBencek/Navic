@@ -98,6 +98,7 @@ import paige.navic.ui.screens.settings.SettingsCustomHeadersScreen
 import paige.navic.ui.screens.settings.SettingsDataStorageScreen
 import paige.navic.ui.screens.settings.SettingsDeveloperScreen
 import paige.navic.ui.screens.settings.SettingsDownloadQualityScreen
+import paige.navic.ui.screens.settings.SettingsEqualiserScreen
 import paige.navic.ui.screens.settings.SettingsLogsScreen
 import paige.navic.ui.screens.settings.SettingsNowPlayingScreen
 import paige.navic.ui.screens.settings.SettingsPlaybackScreen
@@ -411,6 +412,9 @@ private fun entryProvider(
 		}
 		entry<Screen.Settings.AppIcon>(metadata = detailPane("settings")) {
 			SettingsAppIconScreen()
+		}
+		entry<Screen.Settings.Equaliser> {
+			SettingsEqualiserScreen()
 		}
 	}
 }
