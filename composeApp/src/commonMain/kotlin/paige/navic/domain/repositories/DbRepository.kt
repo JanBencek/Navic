@@ -1,6 +1,7 @@
 package paige.navic.domain.repositories
 
 import androidx.room3.concurrent.AtomicInt
+import dev.zt64.subsonic.api.model.SubsonicException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.async
@@ -95,7 +96,15 @@ class DbRepository(
 		syncGenres().getOrThrow()
 
 		progressCallback(0.02f, Res.string.info_syncing_radios)
-		syncRadios().getOrThrow()
+		try {
+			syncRadios().getOrThrow()
+		} catch (ex: SubsonicException) {
+			Logger.e(
+				tag = "DbRepository",
+				msg = "could not sync radio stations, maybe this server doesn't support it",
+				tr = ex
+			)
+		}
 
 		progressCallback(0.04f, Res.string.info_syncing_artists)
 		syncArtists().getOrThrow()
@@ -122,7 +131,8 @@ class DbRepository(
 				playlists.map { playlist ->
 					async {
 						concurrentRequestLimit.withPermit {
-							val playlistSongIds = syncPlaylistSongs(playlist.playlistId).getOrThrow()
+							val playlistSongIds =
+								syncPlaylistSongs(playlist.playlistId).getOrThrow()
 							validSongIds.addAll(playlistSongIds)
 
 							val done = completedPlaylists.incrementAndGet()
