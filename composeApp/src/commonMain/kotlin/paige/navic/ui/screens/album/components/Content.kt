@@ -68,7 +68,7 @@ fun LazyGridScope.albumListScreenContent(
 	} else {
 		when (state) {
 			is UiState.Loading -> {
-				artGridPlaceholder()
+				artGridPlaceholder(viewMode = selectedViewMode)
 			}
 
 			else -> {

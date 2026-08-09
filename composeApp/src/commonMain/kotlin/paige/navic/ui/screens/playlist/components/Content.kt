@@ -59,7 +59,7 @@ fun LazyGridScope.playlistListScreenContent(
 	} else {
 		when (state) {
 			is UiState.Loading -> {
-				artGridPlaceholder()
+				artGridPlaceholder(viewMode = selectedViewMode)
 			}
 
 			else -> {

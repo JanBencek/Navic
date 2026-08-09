@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.plus
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyGridScope
@@ -23,6 +25,7 @@ import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
@@ -156,42 +159,79 @@ fun ArtGridItem(
 
 @Composable
 fun ArtGridPlaceholder(
-	modifier: Modifier = Modifier
+	modifier: Modifier = Modifier,
+	viewMode: ListViewMode = ListViewMode.Grid
 ) {
-	Column(modifier = modifier) {
-		Box(
-			modifier = Modifier
-				.fillMaxWidth()
-				.aspectRatio(1f)
-				// placeholders shouldn't use continuous corners
-				// because it's less performant
-				.clip(RoundedCornerShape(16.0.dp))
-				.shimmerLoading()
-		)
-		Box(
-			modifier = Modifier
-				.padding(top = 6.dp)
-				.fillMaxWidth(0.8f)
-				.height(16.dp)
-				.clip(CircleShape)
-				.shimmerLoading()
-		)
-		Box(
-			modifier = Modifier
-				.padding(top = 4.dp)
-				.fillMaxWidth(0.6f)
-				.height(14.dp)
-				.clip(CircleShape)
-				.shimmerLoading()
+	if (viewMode == ListViewMode.Grid) {
+		Column(modifier = modifier) {
+			Box(
+				modifier = Modifier
+					.fillMaxWidth()
+					.aspectRatio(1f)
+					// placeholders shouldn't use continuous corners
+					// because it's less performant
+					.clip(RoundedCornerShape(16.0.dp))
+					.shimmerLoading()
+			)
+			Box(
+				modifier = Modifier
+					.padding(top = 6.dp)
+					.fillMaxWidth(0.8f)
+					.height(16.dp)
+					.clip(CircleShape)
+					.shimmerLoading()
+			)
+			Box(
+				modifier = Modifier
+					.padding(top = 4.dp)
+					.fillMaxWidth(0.6f)
+					.height(14.dp)
+					.clip(CircleShape)
+					.shimmerLoading()
+			)
+		}
+	} else {
+		ListItem(
+			leadingContent = {
+				Box(
+					modifier = Modifier
+						.size(50.dp)
+						.clip(RoundedCornerShape(8.0.dp))
+						.shimmerLoading()
+				)
+			},
+			headlineContent = {
+				Box(
+					modifier = Modifier
+						.width(170.dp)
+						.height(12.dp)
+						.clip(CircleShape)
+						.shimmerLoading()
+				)
+			},
+			supportingContent = {
+				Box(
+					modifier = Modifier
+						.width(120.dp)
+						.padding(top = 6.dp)
+						.height(12.dp)
+						.clip(CircleShape)
+						.shimmerLoading()
+				)
+			}
 		)
 	}
 }
 
 fun LazyGridScope.artGridPlaceholder(
-	itemCount: Int = 8
+	itemCount: Int = 8,
+	viewMode: ListViewMode = ListViewMode.Grid
 ) {
 	items(itemCount) {
-		ArtGridPlaceholder(Modifier.fillMaxWidth())
+		ArtGridPlaceholder(
+			modifier = Modifier.fillMaxWidth(),
+			viewMode = viewMode
+		)
 	}
 }
 
