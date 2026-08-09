@@ -49,6 +49,7 @@ import paige.navic.domain.manager.PreferenceManager
 import paige.navic.domain.models.DomainSongCollection
 import paige.navic.domain.models.settings.BottomBarCollapseMode
 import paige.navic.domain.models.settings.BottomBarVisibilityMode
+import paige.navic.domain.models.settings.ListViewMode
 import paige.navic.icons.Icons
 import paige.navic.icons.outlined.Add
 import paige.navic.shared.MediaPlayerViewModel
@@ -78,6 +79,7 @@ fun PlaylistListScreen(
 ) {
 	val platformContext = LocalPlatformContext.current
 	val preferenceManager = koinInject<PreferenceManager>()
+	val selectedViewMode = preferenceManager.playlistListViewMode
 
 	val viewModel = koinViewModel<PlaylistListViewModel>(
 		viewModelStoreOwner = if (nested) {
@@ -112,7 +114,9 @@ fun PlaylistListScreen(
 			selectedSorting = selectedSorting,
 			onSetSorting = { viewModel.setSorting(it) },
 			selectedReversed = selectedReversed,
-			onSetReversed = { viewModel.setReversed(it) }
+			onSetReversed = { viewModel.setReversed(it) },
+			selectedViewMode = selectedViewMode,
+			onSetViewMode = { preferenceManager.playlistListViewMode = it }
 		)
 	}
 
@@ -185,13 +189,19 @@ fun PlaylistListScreen(
 				else Modifier,
 				state = gridState,
 				contentPadding = innerPadding.withoutTop(),
-				verticalArrangement = if ((playlistsState as? UiState.Success)?.data?.isEmpty() == true)
+				verticalArrangement = if (playlistsState.data?.isEmpty() == true) {
 					Arrangement.Center
-				else Arrangement.spacedBy(12.dp)
+				} else if (selectedViewMode == ListViewMode.List) {
+					Arrangement.spacedBy(0.dp)
+				} else {
+					Arrangement.spacedBy(12.dp)
+				},
+				selectedViewMode = selectedViewMode
 			) {
 				playlistListScreenContent(
 					state = playlistsState,
 					selectedPlaylist = selectedPlaylist,
+					selectedViewMode = selectedViewMode,
 					onUpdateSelection = { viewModel.selectPlaylist(it) },
 					onClearSelection = { viewModel.clearSelection() },
 					onSetShareId = { newShareId ->

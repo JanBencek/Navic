@@ -39,6 +39,7 @@ import org.koin.compose.koinInject
 import paige.navic.LocalPlatformContext
 import paige.navic.LocalSharedTransitionScope
 import paige.navic.domain.manager.PreferenceManager
+import paige.navic.domain.models.settings.ListViewMode
 import paige.navic.ui.components.common.CoverArt
 import paige.navic.ui.components.common.ErrorBox
 import paige.navic.ui.core.UiState
@@ -52,22 +53,32 @@ fun ArtGrid(
 	contentPadding: PaddingValues,
 	horizontalArrangement: Arrangement.Horizontal = Arrangement.spacedBy(12.dp),
 	verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(12.dp),
+	selectedViewMode: ListViewMode = ListViewMode.Grid,
 	content: LazyGridScope.() -> Unit
 ) {
 	val platformContext = LocalPlatformContext.current
 	val preferenceManager = koinInject<PreferenceManager>()
 	val artGridItemSize = preferenceManager.artGridItemSize
+	val columns = if (selectedViewMode == ListViewMode.List) {
+		GridCells.Fixed(1)
+	} else if (platformContext.sizeClass.widthSizeClass <= WindowWidthSizeClass.Compact) {
+		GridCells.Fixed(preferenceManager.gridSize.value)
+	} else {
+		GridCells.Adaptive(artGridItemSize.dp)
+	}
 	LazyVerticalGrid(
 		modifier = modifier.fillMaxSize(),
 		state = state,
-		columns = if (platformContext.sizeClass.widthSizeClass <= WindowWidthSizeClass.Compact)
-			GridCells.Fixed(preferenceManager.gridSize.value)
-		else GridCells.Adaptive(artGridItemSize.dp),
-		contentPadding = contentPadding + PaddingValues(
-			start = 16.dp,
-			top = 16.dp,
-			end = 16.dp
-		),
+		columns = columns,
+		contentPadding = if (selectedViewMode == ListViewMode.Grid) {
+			contentPadding + PaddingValues(
+				start = 16.dp,
+				top = 16.dp,
+				end = 16.dp
+			)
+		} else {
+			contentPadding
+		},
 		horizontalArrangement = horizontalArrangement,
 		verticalArrangement = verticalArrangement,
 		content = content

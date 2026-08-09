@@ -2,6 +2,7 @@ package paige.navic.ui.screens.artist
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -49,6 +50,7 @@ import paige.navic.ui.core.UiState
 import paige.navic.ui.navigation.PersistentViewModelStoreOwner
 import paige.navic.ui.navigation.Screen
 import paige.navic.ui.screens.artist.components.ArtistListScreenContent
+import paige.navic.ui.screens.artist.components.ArtistListScreenSortButton
 import paige.navic.ui.screens.artist.viewmodels.ArtistListViewModel
 import paige.navic.ui.screens.playlist.dialogs.PlaylistUpdateDialog
 import paige.navic.util.core.isLandscape
@@ -61,6 +63,7 @@ fun ArtistListScreen(
 ) {
 	val platformContext = LocalPlatformContext.current
 	val preferenceManager = koinInject<PreferenceManager>()
+	val selectedViewMode = preferenceManager.artistListViewMode
 
 	val viewModel = koinViewModel<ArtistListViewModel>(
 		key = listType.toString(),
@@ -79,12 +82,24 @@ fun ArtistListScreen(
 
 	val player = koinInject<MediaPlayerViewModel>()
 
+	val actions: @Composable RowScope.() -> Unit = {
+		ArtistListScreenSortButton(
+			nested = nested,
+			selectedViewMode = selectedViewMode,
+			onSetViewMode = { preferenceManager.artistListViewMode = it }
+		)
+	}
+
 	Scaffold(
 		topBar = {
 			if (!nested) {
-				RootTopBar({ Text(stringResource(Res.string.title_artists)) }, scrollBehavior)
+				RootTopBar(
+					{ Text(stringResource(Res.string.title_artists)) },
+					scrollBehavior,
+					actions
+				)
 			} else {
-				NestedTopBar({ Text(stringResource(Res.string.title_artists)) })
+				NestedTopBar({ Text(stringResource(Res.string.title_artists)) }, actions)
 			}
 		},
 		bottomBar = {
@@ -108,6 +123,7 @@ fun ArtistListScreen(
 				starred = starred,
 				selectedArtist = selectedArtist,
 				selectedArtistAlbums = selectedArtistAlbums,
+				selectedViewMode = selectedViewMode,
 				gridState = viewModel.gridState,
 				scrollBehavior = scrollBehavior,
 				innerPadding = innerPadding,
@@ -128,7 +144,7 @@ fun ArtistListScreen(
 }
 
 @Composable
-fun ArtistsScreenItem(
+fun ArtistListScreenGridItem(
 	modifier: Modifier = Modifier,
 	tab: String,
 	artist: DomainArtist,

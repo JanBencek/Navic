@@ -94,9 +94,9 @@ import paige.navic.ui.components.sheets.SongSheet
 import paige.navic.ui.core.UiState
 import paige.navic.ui.navigation.PersistentViewModelStoreOwner
 import paige.navic.ui.navigation.Screen
-import paige.navic.ui.screens.album.components.AlbumListScreenItem
+import paige.navic.ui.screens.album.components.AlbumListScreenGridItem
 import paige.navic.ui.screens.album.viewmodels.AlbumListViewModel
-import paige.navic.ui.screens.artist.ArtistsScreenItem
+import paige.navic.ui.screens.artist.ArtistListScreenGridItem
 import paige.navic.ui.screens.artist.viewmodels.ArtistListViewModel
 import paige.navic.ui.screens.search.components.SearchScreenChips
 import paige.navic.ui.screens.search.components.SearchScreenTopBar
@@ -378,7 +378,7 @@ fun SearchScreen(
 								key = { it.id },
 								seeAll = false
 							) { album ->
-								AlbumListScreenItem(
+								AlbumListScreenGridItem(
 									modifier = Modifier.animateItem(fadeInSpec = null)
 										.width(150.dp),
 									tab = "search",
@@ -403,7 +403,7 @@ fun SearchScreen(
 								key = { it.id },
 								seeAll = false
 							) { artist ->
-								ArtistsScreenItem(
+								ArtistListScreenGridItem(
 									modifier = Modifier.animateItem(fadeInSpec = null)
 										.width(150.dp),
 									tab = "search",
