@@ -11,6 +11,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
@@ -196,7 +197,8 @@ fun App() {
 						SnackbarHost(hostState = snackBarState) { snackBarData ->
 							NavicSnackBar(snackBarData = snackBarData)
 						}
-					}
+					},
+					contentWindowInsets = WindowInsets()
 				) { contentPadding ->
 					NavDisplay(
 						modifier = Modifier
