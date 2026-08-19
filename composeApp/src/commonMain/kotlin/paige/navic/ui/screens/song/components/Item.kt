@@ -85,6 +85,11 @@ fun SongListScreenItem(
 	SwipeToDismissBox(
 		modifier = modifier,
 		state = dismissState,
+		// Swipe gestures compete with tap/long-press detection and eat
+		// hold-to-open-context-menu touches (row slides instead of the
+		// SongSheet opening). Queue/play-next actions live in the long-press
+		// menu too, so disable the swipe here.
+		gesturesEnabled = false,
 		onDismiss = {
 			if (it == SwipeToDismissBoxValue.StartToEnd) onAddToQueue()
 			if (it == SwipeToDismissBoxValue.EndToStart) onPlayNext()
