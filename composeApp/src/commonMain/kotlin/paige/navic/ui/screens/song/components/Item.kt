@@ -11,14 +11,10 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SwipeToDismissBox
-import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -29,7 +25,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.dropUnlessResumed
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.launch
 import navic.composeapp.generated.resources.Res
 import navic.composeapp.generated.resources.action_add_to_queue
 import navic.composeapp.generated.resources.action_play_next
@@ -50,6 +45,7 @@ import paige.navic.icons.outlined.DownloadOff
 import paige.navic.icons.outlined.Queue
 import paige.navic.icons.outlined.QueuePlayNext
 import paige.navic.ui.components.common.CoverArt
+import paige.navic.ui.components.common.SwipeActionRow
 import paige.navic.ui.components.sheets.SongSheet
 import paige.navic.ui.navigation.Screen
 import paige.navic.ui.screens.playlist.dialogs.PlaylistUpdateDialog
@@ -78,61 +74,52 @@ fun SongListScreenItem(
 	onDeleteDownload: () -> Unit,
 ) {
 	val backStack = LocalNavStack.current
-	val dismissState = rememberSwipeToDismissBoxState()
-	val scope = rememberCoroutineScope()
 	var playlistDialogShown by rememberSaveable { mutableStateOf(false) }
 	val preferenceManager = koinInject<PreferenceManager>()
 
-	SwipeToDismissBox(
+	SwipeActionRow(
 		modifier = modifier,
-		state = dismissState,
-		// Swipe gestures compete with tap/long-press detection and eat
-		// hold-to-open-context-menu touches (row slides instead of the
-		// SongSheet opening). Queue/play-next actions live in the long-press
-		// menu too, so disable the swipe here.
-		gesturesEnabled = false,
-		onDismiss = {
-			if (it == SwipeToDismissBoxValue.StartToEnd) onAddToQueue()
-			if (it == SwipeToDismissBoxValue.EndToStart) onPlayNext()
-			scope.launch { dismissState.reset() }
-		},
-		backgroundContent = {
+		onTap = onClick,
+		onLongPress = onSelect,
+		onSwipeRight = onAddToQueue,
+		onSwipeLeft = onPlayNext,
+		rightBackground = {
 			Box(
 				modifier = Modifier
 					.fillMaxSize()
 					.clip(MaterialTheme.shapes.extraSmall)
 					.background(MaterialTheme.colorScheme.primaryContainer)
-					.padding(horizontal = 20.dp),
-				contentAlignment = Alignment.CenterEnd
 			) {
-				when (dismissState.dismissDirection) {
-					SwipeToDismissBoxValue.StartToEnd -> {
-						Icon(
-							imageVector = Icons.Outlined.Queue,
-							contentDescription = stringResource(Res.string.action_add_to_queue),
-							tint = MaterialTheme.colorScheme.onPrimaryContainer,
-							modifier = Modifier.align(Alignment.CenterStart)
-						)
-					}
-
-					SwipeToDismissBoxValue.EndToStart -> {
-						Icon(
-							imageVector = Icons.Outlined.QueuePlayNext,
-							contentDescription = stringResource(Res.string.action_play_next),
-							tint = MaterialTheme.colorScheme.onPrimaryContainer,
-							modifier = Modifier.align(Alignment.CenterEnd)
-						)
-					}
-
-					else -> {}
-				}
+				Icon(
+					imageVector = Icons.Outlined.Queue,
+					contentDescription = stringResource(Res.string.action_add_to_queue),
+					tint = MaterialTheme.colorScheme.onPrimaryContainer,
+					modifier = Modifier
+						.align(Alignment.CenterStart)
+						.padding(horizontal = 20.dp)
+				)
 			}
-		}
+		},
+		leftBackground = {
+			Box(
+				modifier = Modifier
+					.fillMaxSize()
+					.clip(MaterialTheme.shapes.extraSmall)
+					.background(MaterialTheme.colorScheme.primaryContainer)
+			) {
+				Icon(
+					imageVector = Icons.Outlined.QueuePlayNext,
+					contentDescription = stringResource(Res.string.action_play_next),
+					tint = MaterialTheme.colorScheme.onPrimaryContainer,
+					modifier = Modifier
+						.align(Alignment.CenterEnd)
+						.padding(horizontal = 20.dp)
+				)
+			}
+		},
 	) {
 		Box {
 			ListItem(
-				onClick = onClick,
-				onLongClick = onSelect,
 				content = {
 					// Plain ellipsis text, NOT MarqueeText: list rows must not run
 					// infinite scroll animations (jank while scrolling the list).

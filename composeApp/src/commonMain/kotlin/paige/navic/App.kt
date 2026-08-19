@@ -151,7 +151,7 @@ fun App() {
 	val isLoggedIn by sessionManager.isLoggedIn.collectAsStateWithLifecycle()
 	val backStack = rememberNavBackStack(
 		config, if (isLoggedIn) {
-			Screen.Library()
+			Screen.SongList()
 		} else {
 			Screen.Login
 		}
