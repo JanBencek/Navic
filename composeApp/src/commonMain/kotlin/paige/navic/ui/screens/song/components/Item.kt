@@ -13,6 +13,7 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SwipeToDismissBox
 import androidx.compose.material3.SwipeToDismissBoxValue
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -24,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.dropUnlessResumed
 import kotlinx.collections.immutable.persistentListOf
@@ -48,7 +50,6 @@ import paige.navic.icons.outlined.DownloadOff
 import paige.navic.icons.outlined.Queue
 import paige.navic.icons.outlined.QueuePlayNext
 import paige.navic.ui.components.common.CoverArt
-import paige.navic.ui.components.common.MarqueeText
 import paige.navic.ui.components.sheets.SongSheet
 import paige.navic.ui.navigation.Screen
 import paige.navic.ui.screens.playlist.dialogs.PlaylistUpdateDialog
@@ -133,7 +134,9 @@ fun SongListScreenItem(
 				onClick = onClick,
 				onLongClick = onSelect,
 				content = {
-					MarqueeText(
+					// Plain ellipsis text, NOT MarqueeText: list rows must not run
+					// infinite scroll animations (jank while scrolling the list).
+					Text(
 						text = buildAnnotatedString {
 							append(song.title)
 							if (song.explicitStatus == DomainExplicitStatus.Explicit) {
@@ -142,18 +145,22 @@ fun SongListScreenItem(
 							}
 						},
 						inlineContent = InlineExplicitIcon,
+						maxLines = 1,
+						overflow = TextOverflow.Ellipsis
 					)
 				},
 				supportingContent = {
-					MarqueeText(
-						buildSongInfoString(
+					Text(
+						text = buildSongInfoString(
 							song = song,
 							// Artists are plain text here: a tap anywhere on the row
 							// must only play. Artist navigation lives in the
 							// long-press SongSheet ("View artist").
 							onClickArtist = { backStack.add(Screen.ArtistDetail(it)) },
 							clickableArtist = false
-						)
+						),
+						maxLines = 1,
+						overflow = TextOverflow.Ellipsis
 					)
 				},
 				leadingContent = {
