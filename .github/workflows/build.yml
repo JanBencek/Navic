@@ -2,19 +2,6 @@ name: Build
 
 on:
   push:
-    paths:
-      - composeApp/**
-      - androidApp/**
-      - gradle/**
-      - iosApp/**
-      - build.gradle.kts
-      - settings.gradle.kts
-      - .github/workflows/build.yml
-      - "!**/strings.xml"
-    tags:
-      - 'v*'
-    branches:
-      - '*'
   pull_request:
     paths:
       - composeApp/**
