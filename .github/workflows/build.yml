@@ -1,5 +1,6 @@
 name: Build
 
+# Fork: builds a debug APK on every push (no signing secrets configured).
 on:
   push:
   pull_request:
