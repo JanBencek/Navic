@@ -148,7 +148,11 @@ fun SongListScreenItem(
 					MarqueeText(
 						buildSongInfoString(
 							song = song,
-							onClickArtist = { backStack.add(Screen.ArtistDetail(it)) }
+							// Artists are plain text here: a tap anywhere on the row
+							// must only play. Artist navigation lives in the
+							// long-press SongSheet ("View artist").
+							onClickArtist = { backStack.add(Screen.ArtistDetail(it)) },
+							clickableArtist = false
 						)
 					)
 				},
@@ -222,6 +226,9 @@ fun SongListScreenItem(
 								)
 							)
 						}
+					},
+					onViewArtist = dropUnlessResumed {
+						backStack.add(Screen.ArtistDetail(song.artistId))
 					},
 					onAddToPlaylist = {
 						playlistDialogShown = true
