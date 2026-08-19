@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - composeApp/**
+      - androidApp/**
       - gradle/**
       - iosApp/**
       - build.gradle.kts
@@ -63,7 +64,9 @@ jobs:
 
       - name: Build with Gradle (debug)
         id: build_debug
-        if: github.event_name == 'pull_request'
+        # Fork behavior: on push without signing secrets, produce a debug APK
+        # so every push yields a sideloadable artifact.
+        if: github.event_name == 'pull_request' || (github.event_name == 'push' && !env.SIGNING_KEY_ALIAS)
         run: |
           ./gradlew :androidApp:assembleDebug --stacktrace
 
