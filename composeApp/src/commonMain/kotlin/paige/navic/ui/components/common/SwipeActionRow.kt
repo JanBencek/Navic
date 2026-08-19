@@ -73,7 +73,7 @@ fun SwipeActionRow(
 				var swiping = false
 				var moved = false
 
-				val longPressJob = launch {
+				val longPressJob = scope.launch {
 					delay(400)
 					longPressFired = true
 					currentOnLongPress()
@@ -113,14 +113,14 @@ fun SwipeActionRow(
 						if (dist > swipeStartPx && dist > abs(dy)) {
 							swiping = true
 							longPressJob.cancel()
-							offsetX.snapTo(dx)
+							scope.launch { offsetX.snapTo(dx) }
 							change.consume()
 						} else if (dist > holdTolerancePx || abs(dy) > holdTolerancePx) {
 							moved = true
 							longPressJob.cancel()
 						}
 					} else {
-						offsetX.snapTo(dx.coerceIn(-1200f, 1200f))
+						scope.launch { offsetX.snapTo(dx.coerceIn(-1200f, 1200f)) }
 						change.consume()
 					}
 				}

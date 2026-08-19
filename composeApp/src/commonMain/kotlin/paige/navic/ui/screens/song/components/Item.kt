@@ -119,7 +119,10 @@ fun SongListScreenItem(
 		},
 	) {
 		Box {
+			// onClick = {} : SwipeActionRow owns taps/long-presses; this keeps
+			// ListItem's ripple + layout without registering a competing click.
 			ListItem(
+				onClick = {},
 				content = {
 					// Plain ellipsis text, NOT MarqueeText: list rows must not run
 					// infinite scroll animations (jank while scrolling the list).
