@@ -1,3 +1,4 @@
+// Navic Android app module — fork of ssalggnikool/Navic (JanBencek).
 import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.api.variant.impl.VariantOutputImpl
