@@ -27,7 +27,7 @@ fun SongListScreenSortButton(
 		persistentListOf(
 			DomainSongListType.FrequentlyPlayed,
 			DomainSongListType.Newest,
-			DomainSongListType.Starred,
+			DomainSongListType.StarredFirst,
 			DomainSongListType.Random,
 			DomainSongListType.Downloaded,
 			DomainSongListType.Rating,

@@ -20,6 +20,10 @@ sealed class DomainSongListType {
 
 	@Serializable
 	@Immutable
+	data object StarredFirst : DomainSongListType()
+
+	@Serializable
+	@Immutable
 	data object Random : DomainSongListType()
 
 	@Serializable

@@ -33,7 +33,7 @@ fun AlbumListScreenSortButton(
 			DomainAlbumListType.Recent,
 			DomainAlbumListType.Newest,
 			DomainAlbumListType.Highest,
-			DomainAlbumListType.Starred,
+			DomainAlbumListType.StarredFirst,
 			DomainAlbumListType.Random,
 			DomainAlbumListType.Year,
 			DomainAlbumListType.Downloaded

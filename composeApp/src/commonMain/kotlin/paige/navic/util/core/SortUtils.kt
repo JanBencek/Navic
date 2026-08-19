@@ -25,6 +25,10 @@ fun ImmutableList<DomainSong>.sortedByListType(
 		}
 
 		DomainSongListType.Starred -> filter { it.starredAt != null }.sortedBy { it.starredAt }
+		DomainSongListType.StarredFirst -> {
+			val (starred, rest) = partition { it.starredAt != null }
+			starred.sortedBy { it.starredAt } + rest
+		}
 		DomainSongListType.Random -> shuffled()
 		DomainSongListType.Downloaded -> filter { song ->
 			downloads
@@ -68,6 +72,10 @@ fun DomainAlbumListType.toSqlQuery(): RoomRawQuery {
 		DomainAlbumListType.Starred -> {
 			where = "starredAt IS NOT NULL"
 			orderBy = "starredAt ASC"
+		}
+
+		DomainAlbumListType.StarredFirst -> {
+			orderBy = "(starredAt IS NULL) ASC, starredAt ASC, LOWER(name) ASC"
 		}
 
 		DomainAlbumListType.Year -> {

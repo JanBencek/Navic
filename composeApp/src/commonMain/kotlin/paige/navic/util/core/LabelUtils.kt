@@ -59,6 +59,7 @@ fun DomainAlbumListType.label() = when (this) {
 	DomainAlbumListType.AlphabeticalByArtist -> stringResource(Res.string.option_sort_alphabetical_by_artist)
 	DomainAlbumListType.Highest -> stringResource(Res.string.option_sort_rating)
 	DomainAlbumListType.Starred -> stringResource(Res.string.option_sort_starred)
+	DomainAlbumListType.StarredFirst -> stringResource(Res.string.option_sort_starred)
 	DomainAlbumListType.Downloaded -> stringResource(Res.string.option_sort_downloaded)
 	DomainAlbumListType.Year -> stringResource(Res.string.option_sort_year)
 	is DomainAlbumListType.ByGenre -> stringResource(Res.string.option_sort_by_genre)
@@ -75,6 +76,7 @@ fun DomainSongListType.label() = when (this) {
 	DomainSongListType.Random -> stringResource(Res.string.option_sort_random)
 	DomainSongListType.Rating -> stringResource(Res.string.option_sort_rating)
 	DomainSongListType.Starred -> stringResource(Res.string.option_sort_starred)
+	DomainSongListType.StarredFirst -> stringResource(Res.string.option_sort_starred)
 	DomainSongListType.Year -> stringResource(Res.string.option_sort_by_year)
 }
 

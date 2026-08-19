@@ -32,6 +32,10 @@ sealed class DomainAlbumListType(val value: String) {
 
 	@Serializable
 	@Immutable
+	data object StarredFirst : DomainAlbumListType("starredFirst")
+
+	@Serializable
+	@Immutable
 	data object AlphabeticalByName : DomainAlbumListType("alphabeticalByName")
 
 	@Serializable
