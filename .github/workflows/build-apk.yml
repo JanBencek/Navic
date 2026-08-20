@@ -122,6 +122,39 @@ jobs:
           compression-level: 0
           if-no-files-found: ignore
 
+  publish-debug-release:
+    name: Publish Debug Release
+    # Rolling 'debug' release: force-recreated on every push to master so the
+    # stable URL always serves the newest APK (raw file, not zip).
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    needs: [ build-android ]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download APK artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: navic-release-android
+          path: apk
+
+      - name: Publish rolling 'debug' release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          APK=$(find apk -name "*.apk" | head -n 1)
+          [ -n "$APK" ] || { echo "::error::no APK found in artifact"; exit 1; }
+          cp "$APK" Navic.apk
+          # Delete previous release + its tag so the tag can be recreated.
+          gh release delete debug --yes --cleanup-tag --repo "$GITHUB_REPOSITORY" 2>/dev/null || true
+          gh release create debug Navic.apk \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "Navic debug build (${GITHUB_SHA::7})" \
+            --notes "Auto-built debug APK from master@\`${GITHUB_SHA}\`. Direct install: https://github.com/JanBencek/Navic/releases/latest/download/Navic.apk" \
+            --latest
+
   upload-artifacts-to-discord:
     name: Upload Artifacts to Discord
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
