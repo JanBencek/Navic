@@ -20,31 +20,27 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /**
- * Row with tap / long-press / horizontal-swipe arbitration.
+ * Row with a horizontal-swipe action layer. Tap and long-press are NOT
+ * handled here - they belong to the child's own clickable (ListItem), which
+ * works natively and reliably. This layer only claims a gesture once the
+ * finger moves horizontally past [swipeStart] while out-pacing vertical
+ * drift, so holds and taps (which stay within touch slop) are left to the
+ * child untouched.
  *
- * The default Material3 SwipeToDismissBox drag detector claims the gesture as
- * soon as the finger moves past touch slop, which starves the child's
- * long-press (a hold with a few px of drift becomes a swipe). This composable
- * owns all three gestures so they can coexist:
- *
- * - quick tap (no meaningful movement) -> [onTap]
- * - hold ~400ms with up to [holdTolerance] drift -> [onLongPress]
- * - horizontal drag past [swipeStart] that outpaces vertical drift -> swipe:
- *   the content follows the finger; releasing beyond [actionThreshold] fires
+ * - horizontal drag past [swipeStart] that outpaces vertical drift -> the
+ *   content follows the finger; releasing beyond [actionThreshold] fires
  *   [onSwipeRight]/[onSwipeLeft] and the row settles back.
- * - vertical movement cancels holds/taps so the parent LazyColumn scrolls.
+ * - taps / long-presses / vertical scrolls pass through to the child and
+ *   the parent LazyColumn, which consume their own events.
  */
 @Composable
 fun SwipeActionRow(
 	modifier: Modifier = Modifier,
-	onTap: () -> Unit,
-	onLongPress: () -> Unit,
 	onSwipeRight: () -> Unit,
 	onSwipeLeft: () -> Unit,
 	rightBackground: @Composable BoxScope.() -> Unit,
@@ -54,12 +50,9 @@ fun SwipeActionRow(
 	val scope = rememberCoroutineScope()
 	val offsetX = remember { Animatable(0f) }
 	val density = LocalDensity.current
-	val holdTolerancePx = with(density) { 24.dp.toPx() }
 	val swipeStartPx = with(density) { 24.dp.toPx() }
 	val actionThresholdPx = with(density) { 100.dp.toPx() }
 
-	val currentOnTap by rememberUpdatedState(onTap)
-	val currentOnLongPress by rememberUpdatedState(onLongPress)
 	val currentOnSwipeRight by rememberUpdatedState(onSwipeRight)
 	val currentOnSwipeLeft by rememberUpdatedState(onSwipeLeft)
 
@@ -69,33 +62,15 @@ fun SwipeActionRow(
 				val down = awaitFirstDown()
 				val startX = down.position.x
 				val startY = down.position.y
-				var longPressFired = false
 				var swiping = false
-				var moved = false
-
-				val longPressJob = scope.launch {
-					delay(400)
-					longPressFired = true
-					currentOnLongPress()
-				}
 
 				while (true) {
 					val event = awaitPointerEvent()
 					val change = event.changes.firstOrNull { it.id == down.id }
 						?: break
-					if (change.isConsumed) {
-						// Another handler took the pointer (e.g. the LazyColumn
-						// scrolling) - this was movement, not a tap/hold.
-						moved = true
-						longPressJob.cancel()
-						continue
-					}
 
 					if (change.changedToUp()) {
-						if (!swiping) {
-							longPressJob.cancel()
-							if (!longPressFired && !moved) currentOnTap()
-						} else {
+						if (swiping) {
 							if (abs(offsetX.value) >= actionThresholdPx) {
 								if (offsetX.value > 0) currentOnSwipeRight()
 								else currentOnSwipeLeft()
@@ -105,27 +80,21 @@ fun SwipeActionRow(
 						break
 					}
 
-					val dx = change.position.x - startX
-					val dy = change.position.y - startY
-					val dist = abs(dx)
-
 					if (!swiping) {
-						if (dist > swipeStartPx && dist > abs(dy)) {
+						val dx = change.position.x - startX
+						val dy = change.position.y - startY
+						if (abs(dx) > swipeStartPx && abs(dx) > abs(dy)) {
 							swiping = true
-							longPressJob.cancel()
 							scope.launch { offsetX.snapTo(dx) }
 							change.consume()
-						} else if (dist > holdTolerancePx || abs(dy) > holdTolerancePx) {
-							moved = true
-							longPressJob.cancel()
 						}
 					} else {
+						val dx = change.position.x - startX
 						scope.launch { offsetX.snapTo(dx.coerceIn(-1200f, 1200f)) }
 						change.consume()
 					}
 				}
 
-				longPressJob.cancel()
 				if (swiping && offsetX.value != 0f) {
 					scope.launch { offsetX.animateTo(0f, tween(220)) }
 				}

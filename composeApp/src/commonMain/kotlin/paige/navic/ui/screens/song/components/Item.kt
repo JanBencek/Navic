@@ -79,8 +79,6 @@ fun SongListScreenItem(
 
 	SwipeActionRow(
 		modifier = modifier,
-		onTap = onClick,
-		onLongPress = onSelect,
 		onSwipeRight = onAddToQueue,
 		onSwipeLeft = onPlayNext,
 		rightBackground = {
@@ -119,10 +117,11 @@ fun SongListScreenItem(
 		},
 	) {
 		Box {
-			// onClick = {} : SwipeActionRow owns taps/long-presses; this keeps
-			// ListItem's ripple + layout without registering a competing click.
+			// Tap + long-press live on ListItem's native clickable (reliable
+			// ripple/semantics); SwipeActionRow only claims horizontal swipes.
 			ListItem(
-				onClick = {},
+				onClick = onClick,
+				onLongClick = onSelect,
 				content = {
 					// Plain ellipsis text, NOT MarqueeText: list rows must not run
 					// infinite scroll animations (jank while scrolling the list).
