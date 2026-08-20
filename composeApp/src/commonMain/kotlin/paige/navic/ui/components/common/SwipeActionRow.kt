@@ -59,7 +59,10 @@ fun SwipeActionRow(
 	Box(
 		modifier = modifier.pointerInput(Unit) {
 			awaitEachGesture {
-				val down = awaitFirstDown()
+				// The child clickable CONSUMES the down the moment it claims a
+				// press, so requireUnconsumed must be false here - otherwise we
+				// wait forever for a down that never arrives and swipes are dead.
+				val down = awaitFirstDown(requireUnconsumed = false)
 				val startX = down.position.x
 				val startY = down.position.y
 				var swiping = false
